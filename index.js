@@ -61,7 +61,7 @@ instance.prototype.actions = function(system) {
 				}
 			]
 		},
-		'post': {
+		'get': {
 			label: 'GET',
 			options: [
 				{
@@ -84,7 +84,7 @@ instance.prototype.action = function(action) {
 		self.system.emit('rest', action.options.url, {}, function (err, result) {
 
 			if (err !== null) {
-				self.log('info', 'HTTP POST Request failed');
+				self.log('error', 'HTTP POST Request failed');
 				return;
 			}
 
@@ -99,7 +99,7 @@ instance.prototype.action = function(action) {
 		self.system.emit('rest_get', action.options.url, function (err, result) {
 
 			if (err !== null) {
-				self.log('info', 'HTTP GET Request failed');
+				self.log('error', 'HTTP GET Request failed');
 				return;
 			}
 
@@ -112,7 +112,7 @@ instance.prototype.action = function(action) {
 instance.module_info = {
 	label: 'HTTP',
 	id: 'http',
-	version: '1.2.0'
+	version: '1.2.1'
 };
 
 instance_skel.extendedBy(instance);
