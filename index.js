@@ -109,11 +109,5 @@ instance.prototype.action = function(action) {
 	}
 };
 
-instance.module_info = {
-	label: 'HTTP',
-	id: 'http',
-	version: '1.2.1'
-};
-
 instance_skel.extendedBy(instance);
 exports = module.exports = instance;
