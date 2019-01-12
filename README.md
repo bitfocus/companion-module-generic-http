@@ -1,2 +1,2 @@
 # companion-module-generic-http
-See README.md and LICENSE
+See HELP.md and LICENSE
