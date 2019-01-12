@@ -83,26 +83,26 @@ instance.prototype.action = function(action) {
 
 		self.system.emit('rest', action.options.url, {}, function (err, result) {
 
-				if (err !== null) {
-					self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
-					self.status(self.STATUS_ERROR, result.error.code);
-				}
-				else {
-					self.status(self.STATUS_OK);
-				}
+			if (err !== null) {
+				self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
+				self.status(self.STATUS_ERROR, result.error.code);
+			}
+			else {
+				self.status(self.STATUS_OK);
+			}
 		});
 	}
 	else if (action.action == 'get') {
 
 		self.system.emit('rest_get', action.options.url, function (err, result) {
 
-				if (err !== null) {
-					self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
-					self.status(self.STATUS_ERROR, result.error.code);
-				}
-				else {
-					self.status(self.STATUS_OK);
-				}
+			if (err !== null) {
+				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
+				self.status(self.STATUS_ERROR, result.error.code);
+			}
+			else {
+				self.status(self.STATUS_OK);
+			}
 		});
 	}
 };
