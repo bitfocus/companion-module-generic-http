@@ -1,8 +1,11 @@
 {
 	"name": "generic-http",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"api_version": "1.0.0",
-	"keywords": [ "Protocol", "Generic" ],
+	"keywords": [
+		"Protocol",
+		"Generic"
+	],
 	"manufacturer": "Generic",
 	"product": "HTTP Requests",
 	"shortname": "http",
