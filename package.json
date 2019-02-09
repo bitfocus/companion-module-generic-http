@@ -1,6 +1,6 @@
 {
 	"name": "generic-http",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"api_version": "1.0.0",
 	"keywords": [
 		"Protocol",
@@ -18,6 +18,9 @@
 		"url": "git+https://github.com/bitfocus/companion-module-generic-http.git"
 	},
 	"author": "William Viker <william@bitfocus.io>",
+	"contributors": [
+		"Keith Rocheck <keith.rocheck@gmail.com>"
+	],
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/bitfocus/companion-module-generic-http/issues"

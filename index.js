@@ -17,7 +17,10 @@ instance.prototype.updateConfig = function(config) {
 	var self = this;
 
 	self.config = config;
-};
+
+	self.actions();
+}
+
 instance.prototype.init = function() {
 	var self = this;
 
@@ -25,7 +28,7 @@ instance.prototype.init = function() {
 
 	debug = self.debug;
 	log = self.log;
-};
+}
 
 // Return config fields for web config
 instance.prototype.config_fields = function () {
@@ -36,28 +39,42 @@ instance.prototype.config_fields = function () {
 			id: 'info',
 			width: 12,
 			label: 'Information',
-			value: '<strong>PLEASE READ THIS!</strong> Generic modules is only for use with custom applications. If you use this module to control a device or software on the market that more than you are using, <strong>PLEASE let us know</strong> about this software, so we can make a proper module for it. If we already support this and you use this to trigger a feature our module doesnt support, please let us know. We want companion to be as easy as possible to use for anyone.'
+			value: '<strong>PLEASE READ THIS!</strong> Generic modules is only for use with custom applications. If you use this module to control a device or software on the market that more than you are using, <strong>PLEASE let us know</strong> about this software, so we can make a proper module for it. If we already support this and you use this to trigger a feature our module doesnt support, please let us know. We want companion to be as easy as possible to use for anyone.<br /><br />Use the \'Base URL\' field below to define a starting URL for the instance\'s commands: e.g. \'http://server.url/path/\'.  <b>This field will be ignored if a command uses a full URL.</b>'
 		},
+		{
+			type: 'textinput',
+			id: 'prefix',
+			label: 'Base URL',
+			width: 12
+		}
 	]
-};
+}
 
 // When module gets deleted
 instance.prototype.destroy = function() {
 	var self = this;
 	debug("destroy");
-};
+}
 
 instance.prototype.actions = function(system) {
 	var self = this;
-	self.system.emit('instance_actions', self.id, {
+	var urlLabel = 'URL';
+
+	if ( self.config.prefix !== undefined ) {
+		if ( self.config.prefix.length > 0 ) {
+			urlLabel = 'URI';
+		}
+	}
+
+	self.setActions({
 		'post': {
 			label: 'POST',
 			options: [
 				{
-					 type: 'textinput',
-					 label: 'URL',
-					 id: 'url',
-					 default: '',
+					type: 'textinput',
+					label: urlLabel,
+					id: 'url',
+					default: ''
 				}
 			]
 		},
@@ -65,10 +82,10 @@ instance.prototype.actions = function(system) {
 			label: 'GET',
 			options: [
 				{
-					 type: 'textinput',
-					 label: 'URL',
-					 id: 'url',
-					 default: '',
+					type: 'textinput',
+					label: urlLabel,
+					id: 'url',
+					default: '',
 				}
 			]
 		}
@@ -79,10 +96,21 @@ instance.prototype.action = function(action) {
 	var self = this;
 	var cmd;
 
+	if ( self.config.prefix !== undefined && action.options.url.substring(0,4) != 'http' ) {
+		if ( self.config.prefix.length > 0 ) {
+			cmd = self.config.prefix + action.options.url;
+		}
+		else {
+			cmd = action.options.url;
+		}
+	}
+	else {
+		cmd = action.options.url;
+	}
+
 	if (action.action == 'post') {
 
-		self.system.emit('rest', action.options.url, {}, function (err, result) {
-
+		self.system.emit('rest', cmd, {}, function (err, result) {
 			if (err !== null) {
 				self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
 				self.status(self.STATUS_ERROR, result.error.code);
@@ -94,8 +122,7 @@ instance.prototype.action = function(action) {
 	}
 	else if (action.action == 'get') {
 
-		self.system.emit('rest_get', action.options.url, function (err, result) {
-
+		self.system.emit('rest_get', cmd, function (err, result) {
 			if (err !== null) {
 				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
 				self.status(self.STATUS_ERROR, result.error.code);
@@ -105,7 +132,7 @@ instance.prototype.action = function(action) {
 			}
 		});
 	}
-};
+}
 
 instance_skel.extendedBy(instance);
 exports = module.exports = instance;
