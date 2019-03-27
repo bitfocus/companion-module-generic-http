@@ -75,6 +75,12 @@ instance.prototype.actions = function(system) {
 					label: urlLabel,
 					id: 'url',
 					default: ''
+				},
+				{
+					type: 'textinput',
+					label: 'Body(JSON)',
+					id: 'body',
+					default: '{}'
 				}
 			]
 		},
@@ -109,8 +115,15 @@ instance.prototype.action = function(action) {
 	}
 
 	if (action.action == 'post') {
-
-		self.system.emit('rest', cmd, {}, function (err, result) {
+		var body;
+		try {
+			body = JSON.parse(action.options.body);
+		} catch(e){
+			self.log('error', 'HTTP POST Request aborted: Malformed JSON Body (' + e.message+ ')');
+			self.status(self.STATUS_ERROR, e.message);
+			return
+		}
+		self.system.emit('rest', cmd, body, function (err, result) {
 			if (err !== null) {
 				self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
 				self.status(self.STATUS_ERROR, result.error.code);
