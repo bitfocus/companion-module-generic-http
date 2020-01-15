@@ -94,7 +94,24 @@ instance.prototype.actions = function(system) {
 					default: '',
 				}
 			]
-		}
+		},
+		'put': {
+			label: 'PUT',
+			options: [
+				{
+					type: 'textinput',
+					label: urlLabel,
+					id: 'url',
+					default: ''
+				},
+				{
+					type: 'textinput',
+					label: 'Body(JSON)',
+					id: 'body',
+					default: '{}'
+				}
+			]
+		},
 	});
 }
 
@@ -138,6 +155,25 @@ instance.prototype.action = function(action) {
 		self.system.emit('rest_get', cmd, function (err, result) {
 			if (err !== null) {
 				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
+				self.status(self.STATUS_ERROR, result.error.code);
+			}
+			else {
+				self.status(self.STATUS_OK);
+			}
+		});
+	}
+	else if (action.action == 'put') {
+		var body;
+		try {
+			body = JSON.parse(action.options.body);
+		} catch(e){
+			self.log('error', 'HTTP PUT Request aborted: Malformed JSON Body (' + e.message+ ')');
+			self.status(self.STATUS_ERROR, e.message);
+			return
+		}
+		self.system.emit('rest_put', cmd, body, function (err, result) {
+			if (err !== null) {
+				self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
 				self.status(self.STATUS_ERROR, result.error.code);
 			}
 			else {
