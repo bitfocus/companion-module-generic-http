@@ -13,7 +13,7 @@ function instance(system, id, config) {
 	return self;
 }
 
-instance.prototype.updateConfig = function (config) {
+instance.prototype.updateConfig = function(config) {
 	var self = this;
 
 	self.config = config;
@@ -21,7 +21,7 @@ instance.prototype.updateConfig = function (config) {
 	self.actions();
 }
 
-instance.prototype.init = function () {
+instance.prototype.init = function() {
 	var self = this;
 
 	self.status(self.STATE_OK);
@@ -51,17 +51,17 @@ instance.prototype.config_fields = function () {
 }
 
 // When module gets deleted
-instance.prototype.destroy = function () {
+instance.prototype.destroy = function() {
 	var self = this;
 	debug("destroy");
 }
 
-instance.prototype.actions = function (system) {
+instance.prototype.actions = function(system) {
 	var self = this;
 	var urlLabel = 'URL';
 
-	if (self.config.prefix !== undefined) {
-		if (self.config.prefix.length > 0) {
+	if ( self.config.prefix !== undefined ) {
+		if ( self.config.prefix.length > 0 ) {
 			urlLabel = 'URI';
 		}
 	}
