@@ -1,37 +1,37 @@
-var instance_skel = require('../../instance_skel');
+var instance_skel = require( '../../instance_skel' );
 var debug;
 var log;
 
-function instance(system, id, config) {
+function instance( system, id, config ) {
 	var self = this;
 
 	// super-constructor
-	instance_skel.apply(this, arguments);
+	instance_skel.apply( this, arguments );
 
-	self.actions(); // export actions
+	self.actions(  ); // export actions
 
 	return self;
 }
 
-instance.prototype.updateConfig = function (config) {
+instance.prototype.updateConfig = function(config) {
 	var self = this;
 
 	self.config = config;
 
-	self.actions();
+	self.actions(  );
 }
 
-instance.prototype.init = function () {
+instance.prototype.init = function() {
 	var self = this;
 
-	self.status(self.STATE_OK);
+	self.status( self.STATE_OK );
 
 	debug = self.debug;
 	log = self.log;
 }
 
 // Return config fields for web config
-instance.prototype.config_fields = function () {
+instance.prototype.config_fields = function() {
 	var self = this;
 	return [
 		{
@@ -51,22 +51,22 @@ instance.prototype.config_fields = function () {
 }
 
 // When module gets deleted
-instance.prototype.destroy = function () {
+instance.prototype.destroy = function() {
 	var self = this;
-	debug("destroy");
+	debug( "destroy" );
 }
 
-instance.prototype.actions = function (system) {
+instance.prototype.actions = function(system) {
 	var self = this;
 	var urlLabel = 'URL';
 
-	if (self.config.prefix !== undefined) {
-		if (self.config.prefix.length > 0) {
+	if ( self.config.prefix !== undefined ) {
+		if ( self.config.prefix.length > 0 ) {
 			urlLabel = 'URI';
 		}
 	}
 
-	self.setActions({
+	self.setActions( {
 		'post': {
 			label: 'POST',
 			options: [
@@ -78,13 +78,13 @@ instance.prototype.actions = function (system) {
 				},
 				{
 					type: 'textinput',
-					label: 'Body(JSON)',
+					label: 'Body( JSON )',
 					id: 'body',
 					default: '{}'
 				},
 				{
 					type: 'textinput',
-					label: 'Header(JSON)',
+					label: 'Header( JSON )',
 					id: 'header',
 					default: '{ "Content-Type": "application/json"}'
 				}
@@ -101,7 +101,7 @@ instance.prototype.actions = function (system) {
 				},
 				{
 					type: 'textinput',
-					label: 'Header(JSON)',
+					label: 'Header( JSON )',
 					id: 'header',
 					default: '{ "Content-Type": "application/json"}'
 				}
@@ -118,27 +118,27 @@ instance.prototype.actions = function (system) {
 				},
 				{
 					type: 'textinput',
-					label: 'Body(JSON)',
+					label: 'Body( JSON )',
 					id: 'body',
 					default: '{}'
 				},
 				{
 					type: 'textinput',
-					label: 'Header(JSON)',
+					label: 'Header( JSON )',
 					id: 'header',
 					default: '{ "Content-Type": "application/json"}'
 				}
 			]
 		},
-	});
+	} );
 }
 
-instance.prototype.action = function (action) {
+instance.prototype.action = function(action) {
 	var self = this;
 	var cmd;
 
-	if (self.config.prefix !== undefined && action.options.url.substring(0, 4) != 'http') {
-		if (self.config.prefix.length > 0) {
+	if ( self.config.prefix !== undefined && action.options.url.substring( 0, 4 ) != 'http' ) {
+		if ( self.config.prefix.length > 0 ) {
 			cmd = self.config.prefix + action.options.url;
 		}
 		else {
@@ -149,64 +149,64 @@ instance.prototype.action = function (action) {
 		cmd = action.options.url;
 	}
 
-	if (action.action == 'post') {
+	if ( action.action == 'post' ) {
 		var body, header;
 		try {
-			body = JSON.parse(action.options.body);
-			header = JSON.parse(action.options.header);
-		} catch (e) {
-			self.log('error', 'HTTP POST Request aborted: Malformed JSON Body or JSON Header (' + e.message + ')');
-			self.status(self.STATUS_ERROR, e.message);
+			body = JSON.parse( action.options.body );
+			header = JSON.parse( action.options.header );
+		} catch ( e ) {
+			self.log( 'error', 'HTTP POST Request aborted: Malformed JSON Body or JSON Header ( ' + e.message + ' )' );
+			self.status( self.STATUS_ERROR, e.message );
 			return
 		}
-		self.system.emit('rest', cmd, body, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
+		self.system.emit( 'rest', cmd, body, function( err, result ) {
+			if ( err !== null ) {
+				self.log( 'error', 'HTTP POST Request failed ( ' + result.error.code + ' )' );
+				self.status( self.STATUS_ERROR, result.error.code );
 			}
 			else {
-				self.status(self.STATUS_OK);
+				self.status( self.STATUS_OK );
 			}
-		}, header);
+		}, header );
 	}
-	else if (action.action == 'get') {
+	else if ( action.action == 'get' ) {
 		var header;
 		try {
 			header = JSON.parse(action.options.header);
-		} catch (e) {
-			self.log('error', 'HTTP GET Request aborted: Malformed JSON Header (' + e.message + ')');
-			self.status(self.STATUS_ERROR, e.message);
+		} catch ( e ) {
+			self.log( 'error', 'HTTP GET Request aborted: Malformed JSON Header ( ' + e.message + ' )' );
+			self.status( self.STATUS_ERROR, e.message );
 			return
 		}
-		self.system.emit('rest_get', cmd, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
+		self.system.emit( 'rest_get', cmd, function(err, result) {
+			if ( err !== null ) {
+				self.log( 'error', 'HTTP GET Request failed ( ' + result.error.code + ' )' );
+				self.status( self.STATUS_ERROR, result.error.code );
 			}
 			else {
-				self.status(self.STATUS_OK);
+				self.status( self.STATUS_OK );
 			}
-		}, header);
+		}, header );
 	}
-	else if (action.action == 'put') {
+	else if ( action.action == 'put' ) {
 		var body, header;
 		try {
 			body = JSON.parse(action.options.body);
 			header = JSON.parse(action.options.header);
-		} catch (e) {
+		} catch ( e ) {
 			self.log('error', 'HTTP PUT Request aborted: Malformed JSON Body or JSON Header (' + e.message + ')');
 			self.status(self.STATUS_ERROR, e.message);
 			return
 		}
-		self.system.emit('rest_put', cmd, body, function (err, result) {
-			if (err !== null) {
+		self.system.emit('rest_put', cmd, body, function(err, result) {
+			if ( err !== null ) {
 				self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
 				self.status(self.STATUS_ERROR, result.error.code);
 			}
 			else {
 				self.status(self.STATUS_OK);
 			}
-		});
+		} );
 	}
 }
 
