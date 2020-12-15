@@ -1,6 +1,6 @@
 {
 	"name": "generic-http",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"api_version": "1.0.0",
 	"keywords": [
 		"Protocol",
@@ -19,7 +19,8 @@
 	},
 	"author": "William Viker <william@bitfocus.io>",
 	"contributors": [
-		"Keith Rocheck <keith.rocheck@gmail.com>"
+		"Keith Rocheck <keith.rocheck@gmail.com>",
+		"Jeffrey Davidsz <jeffrey.davidsz@vicreo.eu>"
 	],
 	"license": "MIT",
 	"bugs": {
