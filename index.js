@@ -81,22 +81,17 @@ instance.prototype.actions = function(system) {
 					label: 'Body(JSON)',
 					id: 'body',
 					default: '{}'
+				},
+				{
+					type: 'textinput',
+					label: 'header input',
+					id: 'header',
+					default: '',
 				}
 			]
 		},
 		'get': {
 			label: 'GET',
-			options: [
-				{
-					type: 'textinput',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				}
-			]
-		},
-		'get_header': {
-			label: 'GET with header',
 			options: [
 				{
 					type: 'textinput',
@@ -126,6 +121,12 @@ instance.prototype.actions = function(system) {
 					label: 'Body(JSON)',
 					id: 'body',
 					default: '{}'
+				},
+				{
+					type: 'textinput',
+					label: 'header input',
+					id: 'header',
+					default: '',
 				}
 			]
 		},
@@ -157,39 +158,50 @@ instance.prototype.action = function(action) {
 			self.status(self.STATUS_ERROR, e.message);
 			return
 		}
-		self.system.emit('rest', cmd, body, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
-			}
-			else {
-				self.status(self.STATUS_OK);
-			}
-		});
+		if(action.options.header != '') {
+			self.system.emit('rest', cmd, body, action.options.header, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		} else {
+			self.system.emit('rest', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		}
 	}
 	else if (action.action == 'get') {
-
-		self.system.emit('rest_get', cmd, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
-			}
-			else {
-				self.status(self.STATUS_OK);
-			}
-		});
-	}
-	else if (action.action == 'get_header') {
-
-		self.system.emit('rest_get', cmd, action.options.header, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
-			}
-			else {
-				self.status(self.STATUS_OK);
-			}
-		});
+		if(action.options.header != '') {
+			self.system.emit('rest_get', cmd, action.options.header, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		} else {
+			self.system.emit('rest_get', cmd, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		}
 	}
 	else if (action.action == 'put') {
 		var body;
@@ -200,15 +212,27 @@ instance.prototype.action = function(action) {
 			self.status(self.STATUS_ERROR, e.message);
 			return
 		}
-		self.system.emit('rest_put', cmd, body, function (err, result) {
-			if (err !== null) {
-				self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
-				self.status(self.STATUS_ERROR, result.error.code);
-			}
-			else {
-				self.status(self.STATUS_OK);
-			}
-		});
+		if(action.options.header != '') {
+			self.system.emit('rest_put', cmd, body, action.options.header, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		} else {
+			self.system.emit('rest_put', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		}
 	}
 }
 
