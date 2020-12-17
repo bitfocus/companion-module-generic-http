@@ -158,8 +158,8 @@ instance.prototype.action = function(action) {
 			self.status(self.STATUS_ERROR, e.message);
 			return
 		}
-		if(action.options.header != '') {
-			self.system.emit('rest', cmd, body, action.options.header, function (err, result) {
+		if(!!action.options.header) {
+			self.system.emit('rest', cmd, body, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
 					self.status(self.STATUS_ERROR, result.error.code);
@@ -167,7 +167,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			});
+			}, action.options.header);
 		} else {
 			self.system.emit('rest', cmd, body, function (err, result) {
 				if (err !== null) {
@@ -181,8 +181,8 @@ instance.prototype.action = function(action) {
 		}
 	}
 	else if (action.action == 'get') {
-		if(action.options.header != '') {
-			self.system.emit('rest_get', cmd, action.options.header, function (err, result) {
+		if(!!action.options.header) {
+			self.system.emit('rest_get', cmd, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
 					self.status(self.STATUS_ERROR, result.error.code);
@@ -190,7 +190,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			});
+			}, action.options.header);
 		} else {
 			self.system.emit('rest_get', cmd, function (err, result) {
 				if (err !== null) {
@@ -212,8 +212,8 @@ instance.prototype.action = function(action) {
 			self.status(self.STATUS_ERROR, e.message);
 			return
 		}
-		if(action.options.header != '') {
-			self.system.emit('rest_put', cmd, body, action.options.header, function (err, result) {
+		if(!!action.options.header) {
+			self.system.emit('rest_put', cmd, body, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
 					self.status(self.STATUS_ERROR, result.error.code);
@@ -221,7 +221,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			});
+			}, action.options.header);
 		} else {
 			self.system.emit('rest_put', cmd, body, function (err, result) {
 				if (err !== null) {
