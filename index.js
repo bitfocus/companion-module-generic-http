@@ -84,7 +84,7 @@ instance.prototype.actions = function(system) {
 				},
 				{
 					type: 'textinput',
-					label: 'header input',
+					label: 'header input(JSON)',
 					id: 'header',
 					default: '',
 				}
@@ -101,7 +101,7 @@ instance.prototype.actions = function(system) {
 				},
 				{
 					type: 'textinput',
-					label: 'header input',
+					label: 'header input(JSON)',
 					id: 'header',
 					default: '',
 				}
@@ -124,7 +124,7 @@ instance.prototype.actions = function(system) {
 				},
 				{
 					type: 'textinput',
-					label: 'header input',
+					label: 'header input(JSON)',
 					id: 'header',
 					default: '',
 				}
@@ -151,6 +151,7 @@ instance.prototype.action = function(action) {
 
 	if (action.action == 'post') {
 		var body;
+		var header;
 		try {
 			body = JSON.parse(action.options.body);
 		} catch(e){
@@ -159,6 +160,13 @@ instance.prototype.action = function(action) {
 			return
 		}
 		if(!!action.options.header) {
+			try {
+				header = JSON.parse(action.options.header);
+			} catch(e){
+				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.status(self.STATUS_ERROR, e.message);
+				return
+			}
 			self.system.emit('rest', cmd, body, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP POST Request failed (' + result.error.code + ')');
@@ -167,7 +175,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			}, action.options.header);
+			}, header);
 		} else {
 			self.system.emit('rest', cmd, body, function (err, result) {
 				if (err !== null) {
@@ -181,7 +189,15 @@ instance.prototype.action = function(action) {
 		}
 	}
 	else if (action.action == 'get') {
+		var header;
 		if(!!action.options.header) {
+			try {
+				header = JSON.parse(action.options.header);
+			} catch(e){
+				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.status(self.STATUS_ERROR, e.message);
+				return
+			}
 			self.system.emit('rest_get', cmd, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
@@ -190,7 +206,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			}, action.options.header);
+			}, header);
 		} else {
 			self.system.emit('rest_get', cmd, function (err, result) {
 				if (err !== null) {
@@ -205,6 +221,7 @@ instance.prototype.action = function(action) {
 	}
 	else if (action.action == 'put') {
 		var body;
+		var header;
 		try {
 			body = JSON.parse(action.options.body);
 		} catch(e){
@@ -213,6 +230,13 @@ instance.prototype.action = function(action) {
 			return
 		}
 		if(!!action.options.header) {
+			try {
+				header = JSON.parse(action.options.header);
+			} catch(e){
+				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.status(self.STATUS_ERROR, e.message);
+				return
+			}
 			self.system.emit('rest_put', cmd, body, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
@@ -221,7 +245,7 @@ instance.prototype.action = function(action) {
 				else {
 					self.status(self.STATUS_OK);
 				}
-			}, action.options.header);
+			}, header);
 		} else {
 			self.system.emit('rest_put', cmd, body, function (err, result) {
 				if (err !== null) {
