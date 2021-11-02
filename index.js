@@ -194,7 +194,7 @@ instance.prototype.action = function(action) {
 			try {
 				header = JSON.parse(action.options.header);
 			} catch(e){
-				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.log('error', 'HTTP GET Request aborted: Malformed JSON header (' + e.message+ ')');
 				self.status(self.STATUS_ERROR, e.message);
 				return
 			}
@@ -233,7 +233,7 @@ instance.prototype.action = function(action) {
 			try {
 				header = JSON.parse(action.options.header);
 			} catch(e){
-				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.log('error', 'HTTP PUT Request aborted: Malformed JSON header (' + e.message+ ')');
 				self.status(self.STATUS_ERROR, e.message);
 				return
 			}
@@ -250,6 +250,84 @@ instance.prototype.action = function(action) {
 			self.system.emit('rest_put', cmd, body, function (err, result) {
 				if (err !== null) {
 					self.log('error', 'HTTP PUT Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		}
+	}
+	else if (action.action == 'patch') {
+		var body;
+		var header;
+		try {
+			body = JSON.parse(action.options.body);
+		} catch(e){
+			self.log('error', 'HTTP PATCH Request aborted: Malformed JSON Body (' + e.message+ ')');
+			self.status(self.STATUS_ERROR, e.message);
+			return
+		}
+		if(!!action.options.header) {
+			try {
+				header = JSON.parse(action.options.header);
+			} catch(e){
+				self.log('error', 'HTTP PATCH Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.status(self.STATUS_ERROR, e.message);
+				return
+			}
+			self.system.emit('rest_patch', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP PATCH Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			}, header);
+		} else {
+			self.system.emit('rest_patch', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP PATCH Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			});
+		}
+	}
+	else if (action.action == 'delete') {
+		var body;
+		var header;
+		try {
+			body = JSON.parse(action.options.body);
+		} catch(e){
+			self.log('error', 'HTTP DELETE Request aborted: Malformed JSON Body (' + e.message+ ')');
+			self.status(self.STATUS_ERROR, e.message);
+			return
+		}
+		if(!!action.options.header) {
+			try {
+				header = JSON.parse(action.options.header);
+			} catch(e){
+				self.log('error', 'HTTP DELETE Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.status(self.STATUS_ERROR, e.message);
+				return
+			}
+			self.system.emit('rest_delete', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP DELETE Request failed (' + result.error.code + ')');
+					self.status(self.STATUS_ERROR, result.error.code);
+				}
+				else {
+					self.status(self.STATUS_OK);
+				}
+			}, header);
+		} else {
+			self.system.emit('rest_delete', cmd, body, function (err, result) {
+				if (err !== null) {
+					self.log('error', 'HTTP DELETE Request failed (' + result.error.code + ')');
 					self.status(self.STATUS_ERROR, result.error.code);
 				}
 				else {
