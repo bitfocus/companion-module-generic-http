@@ -194,7 +194,7 @@ instance.prototype.action = function(action) {
 			try {
 				header = JSON.parse(action.options.header);
 			} catch(e){
-				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.log('error', 'HTTP GET Request aborted: Malformed JSON header (' + e.message+ ')');
 				self.status(self.STATUS_ERROR, e.message);
 				return
 			}
@@ -233,7 +233,7 @@ instance.prototype.action = function(action) {
 			try {
 				header = JSON.parse(action.options.header);
 			} catch(e){
-				self.log('error', 'HTTP POST Request aborted: Malformed JSON header (' + e.message+ ')');
+				self.log('error', 'HTTP PUT Request aborted: Malformed JSON header (' + e.message+ ')');
 				self.status(self.STATUS_ERROR, e.message);
 				return
 			}
