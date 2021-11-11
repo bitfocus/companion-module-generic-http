@@ -131,6 +131,52 @@ instance.prototype.actions = function (system) {
 				},
 			],
 		},
+		patch: {
+			label: 'PATCH',
+			options: [
+				{
+					type: 'textwithvariables',
+					label: urlLabel,
+					id: 'url',
+					default: '',
+				},
+				{
+					type: 'textwithvariables',
+					label: 'Body(JSON)',
+					id: 'body',
+					default: '{}',
+				},
+				{
+					type: 'textwithvariables',
+					label: 'header input(JSON)',
+					id: 'header',
+					default: '',
+				},
+			],
+		},
+		delete: {
+			label: 'DELETE',
+			options: [
+				{
+					type: 'textwithvariables',
+					label: urlLabel,
+					id: 'url',
+					default: '',
+				},
+				{
+					type: 'textwithvariables',
+					label: 'Body(JSON)',
+					id: 'body',
+					default: '{}',
+				},
+				{
+					type: 'textwithvariables',
+					label: 'header input(JSON)',
+					id: 'header',
+					default: '',
+				},
+			],
+		},
 	})
 }
 
