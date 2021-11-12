@@ -18,11 +18,23 @@ instance.prototype.updateConfig = function (config) {
 
 	self.config = config
 
+	if (self.config.prefix !== undefined && self.config.prefix.length > 0) {
+		self.FIELD_URL.label = 'URI'
+	} else {
+		self.FIELD_URL.label = 'URL'
+	}
+
 	self.actions()
 }
 
 instance.prototype.init = function () {
 	var self = this
+	
+	if (self.config.prefix !== undefined && self.config.prefix.length > 0) {
+		self.FIELD_URL.label = 'URI'
+	} else {
+		self.FIELD_URL.label = 'URL'
+	}
 
 	self.status(self.STATE_OK)
 
@@ -80,12 +92,6 @@ instance.prototype.FIELD_HEADER = {
 
 instance.prototype.actions = function (system) {
 	var self = this
-
-	if (self.config.prefix !== undefined) {
-		if (self.config.prefix.length > 0) {
-			self.FIELD_URL.label = 'URI'
-		}
-	}
 
 	self.setActions({
 		post: {
