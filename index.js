@@ -59,7 +59,7 @@ instance.prototype.destroy = function () {
 
 instance.prototype.FIELD_URL = {
 	type: 'textwithvariables',
-	label: urlLabel,
+	label: 'URL',
 	id: 'url',
 	default: '',
 }
@@ -80,11 +80,10 @@ instance.prototype.FIELD_HEADER = {
 
 instance.prototype.actions = function (system) {
 	var self = this
-	var urlLabel = 'URL'
 
 	if (self.config.prefix !== undefined) {
 		if (self.config.prefix.length > 0) {
-			urlLabel = 'URI'
+			self.FIELD_URL.label = 'URI'
 		}
 	}
 
