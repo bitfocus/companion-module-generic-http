@@ -57,6 +57,27 @@ instance.prototype.destroy = function () {
 	debug('destroy')
 }
 
+instance.prototype.FIELD_URL = {
+	type: 'textwithvariables',
+	label: urlLabel,
+	id: 'url',
+	default: '',
+}
+
+instance.prototype.FIELD_BODY = {
+	type: 'textwithvariables',
+	label: 'Body(JSON)',
+	id: 'body',
+	default: '{}',
+}
+
+instance.prototype.FIELD_HEADER = {
+	type: 'textwithvariables',
+	label: 'header input(JSON)',
+	id: 'header',
+	default: '',
+}
+
 instance.prototype.actions = function (system) {
 	var self = this
 	var urlLabel = 'URL'
@@ -70,112 +91,23 @@ instance.prototype.actions = function (system) {
 	self.setActions({
 		post: {
 			label: 'POST',
-			options: [
-				{
-					type: 'textwithvariables',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'Body(JSON)',
-					id: 'body',
-					default: '{}',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'header input(JSON)',
-					id: 'header',
-					default: '',
-				},
-			],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
 		},
 		get: {
 			label: 'GET',
-			options: [
-				{
-					type: 'textwithvariables',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'header input(JSON)',
-					id: 'header',
-					default: '',
-				},
-			],
+			options: [self.FIELD_URL, self.FIELD_HEADER],
 		},
 		put: {
 			label: 'PUT',
-			options: [
-				{
-					type: 'textwithvariables',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'Body(JSON)',
-					id: 'body',
-					default: '{}',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'header input(JSON)',
-					id: 'header',
-					default: '',
-				},
-			],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
 		},
 		patch: {
 			label: 'PATCH',
-			options: [
-				{
-					type: 'textwithvariables',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'Body(JSON)',
-					id: 'body',
-					default: '{}',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'header input(JSON)',
-					id: 'header',
-					default: '',
-				},
-			],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
 		},
 		delete: {
 			label: 'DELETE',
-			options: [
-				{
-					type: 'textwithvariables',
-					label: urlLabel,
-					id: 'url',
-					default: '',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'Body(JSON)',
-					id: 'body',
-					default: '{}',
-				},
-				{
-					type: 'textwithvariables',
-					label: 'header input(JSON)',
-					id: 'header',
-					default: '',
-				},
-			],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
 		},
 	})
 }
