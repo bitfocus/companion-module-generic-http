@@ -7,3 +7,5 @@ Generic modules is only for use with custom applications. If you use this module
 * POST
 * GET
 * PUT
+* PATCH
+* DELETE
