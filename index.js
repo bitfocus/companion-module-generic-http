@@ -149,7 +149,7 @@ instance.prototype.action = function (action) {
 		}
 	}
 
-	if (action.options.body.trim() !== '') {
+	if (action.options.body && action.options.body.trim() !== '') {
 		self.system.emit('variable_parse', action.options.body, function (value) {
 			body = value
 		})
@@ -177,6 +177,7 @@ instance.prototype.action = function (action) {
 		}
 	}
 
+	console.log({restCmd, cmd, body, header}) 
 	if (restCmd === 'rest_get') {
 		self.system.emit(restCmd, cmd, errorHandler, header)
 	} else {
