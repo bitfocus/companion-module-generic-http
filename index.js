@@ -177,7 +177,6 @@ instance.prototype.action = function (action) {
 		}
 	}
 
-	console.log({restCmd, cmd, body, header}) 
 	if (restCmd === 'rest_get') {
 		self.system.emit(restCmd, cmd, errorHandler, header)
 	} else {
