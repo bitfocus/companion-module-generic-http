@@ -78,7 +78,7 @@ instance.prototype.FIELD_URL = {
 
 instance.prototype.FIELD_BODY = {
 	type: 'textwithvariables',
-	label: 'Body(JSON)',
+	label: 'Body',
 	id: 'body',
 	default: '{}',
 }
