@@ -13,6 +13,26 @@ function instance(system, id, config) {
 	return self
 }
 
+instance.GetUpgradeScripts = function () {
+	return [
+		function v1_1_4(context, config, actions) {
+			let updated = false
+
+			actions.forEach((action) => {
+				// set default content-type on older actions
+				if (['post', 'put', 'patch'].includes(action.action)) {
+					if (action.options.contenttype === undefined) {
+						action.options.contenttype = 'application/json'
+						updated = true
+					}
+				}
+			})
+
+			return updated
+		},
+	]
+}
+
 instance.prototype.updateConfig = function (config) {
 	var self = this
 
