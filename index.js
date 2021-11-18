@@ -118,11 +118,11 @@ instance.prototype.actions = function (system) {
 		},
 		put: {
 			label: 'PUT',
-			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER, self.FIELD_CONTENTTYPE],
 		},
 		patch: {
 			label: 'PATCH',
-			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER, self.FIELD_CONTENTTYPE],
 		},
 		delete: {
 			label: 'DELETE',
@@ -196,12 +196,10 @@ instance.prototype.action = function (action) {
 
 	if (restCmd === 'rest_get') {
 		self.system.emit(restCmd, cmd, errorHandler, header)
-	} else if (restCmd === 'rest') {
+	} else {
 		if (action.options.contenttype) {
 			header['Content-Type'] = action.options.contenttype
 		}
-		self.system.emit(restCmd, cmd, body, errorHandler, header)
-	} else {
 		self.system.emit(restCmd, cmd, body, errorHandler, header)
 	}
 }
