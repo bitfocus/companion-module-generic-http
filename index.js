@@ -90,13 +90,27 @@ instance.prototype.FIELD_HEADER = {
 	default: '',
 }
 
+instance.prototype.FIELD_CONTENTTYPE = {
+	type: 'dropdown',
+	label: 'Content Type',
+	id: 'contenttype',
+	default: 'application/json',
+	choices: [
+		{ id: 'application/json', label: 'application/json'},
+		{ id: 'application/x-www-form-urlencoded', label: 'application/x-www-form-urlencoded'},
+		{ id: 'application/xml', label: 'application/xml'},
+		{ id: 'text/html', label: 'text/html'},
+		{ id: 'text/plain', label: 'text/plain'}
+	]
+}
+
 instance.prototype.actions = function (system) {
 	var self = this
 
 	self.setActions({
 		post: {
 			label: 'POST',
-			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER],
+			options: [self.FIELD_URL, self.FIELD_BODY, self.FIELD_HEADER, self.FIELD_CONTENTTYPE],
 		},
 		get: {
 			label: 'GET',
@@ -154,12 +168,15 @@ instance.prototype.action = function (action) {
 			body = value
 		})
 
-		try {
-			body = JSON.parse(body)
-		} catch (e) {
-			self.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
-			self.status(self.STATUS_ERROR, e.message)
-			return
+		if (action.options.contenttype && action.options.contenttype === 'application/json') {
+			//only parse the body if we are explicitly sending application/json
+			try {
+				body = JSON.parse(body)
+			} catch (e) {
+				self.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
+				self.status(self.STATUS_ERROR, e.message)
+				return
+			}
 		}
 	}
 
@@ -179,6 +196,11 @@ instance.prototype.action = function (action) {
 
 	if (restCmd === 'rest_get') {
 		self.system.emit(restCmd, cmd, errorHandler, header)
+	} else if (restCmd === 'rest') {
+		if (action.options.contenttype) {
+			header['Content-Type'] = action.options.contenttype
+		}
+		self.system.emit(restCmd, cmd, body, errorHandler, header)
 	} else {
 		self.system.emit(restCmd, cmd, body, errorHandler, header)
 	}
