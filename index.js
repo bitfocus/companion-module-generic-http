@@ -49,7 +49,7 @@ instance.prototype.updateConfig = function (config) {
 
 instance.prototype.init = function () {
 	var self = this
-	
+
 	if (self.config.prefix !== undefined && self.config.prefix.length > 0) {
 		self.FIELD_URL.label = 'URI'
 	} else {
@@ -116,12 +116,12 @@ instance.prototype.FIELD_CONTENTTYPE = {
 	id: 'contenttype',
 	default: 'application/json',
 	choices: [
-		{ id: 'application/json', label: 'application/json'},
-		{ id: 'application/x-www-form-urlencoded', label: 'application/x-www-form-urlencoded'},
-		{ id: 'application/xml', label: 'application/xml'},
-		{ id: 'text/html', label: 'text/html'},
-		{ id: 'text/plain', label: 'text/plain'}
-	]
+		{ id: 'application/json', label: 'application/json' },
+		{ id: 'application/x-www-form-urlencoded', label: 'application/x-www-form-urlencoded' },
+		{ id: 'application/xml', label: 'application/xml' },
+		{ id: 'text/html', label: 'text/html' },
+		{ id: 'text/plain', label: 'text/plain' },
+	],
 }
 
 instance.prototype.actions = function (system) {
@@ -164,8 +164,8 @@ instance.prototype.action = function (action) {
 		delete: 'rest_delete',
 	}
 	var restCmd = restCmds[action.action]
-	var errorHandler = function (err, result) {
-		if (err !== null) {
+	var errorHandler = function (e, result) {
+		if (e !== null) {
 			self.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
 			self.status(self.STATUS_ERROR, result.error.code)
 		} else {
