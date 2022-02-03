@@ -187,18 +187,18 @@ class instance extends instance_skel {
 	}
 
 	action(action) {
-		var cmd = ''
-		var body = {}
-		var header = {}
-		var restCmds = {
+		let cmd = ''
+		let body = {}
+		let header = {}
+		let restCmds = {
 			post: 'rest',
 			get: 'rest_get',
 			put: 'rest_put',
 			patch: 'rest_patch',
 			delete: 'rest_delete',
 		}
-		var restCmd = restCmds[action.action]
-		var errorHandler = (e, result) => {
+		let restCmd = restCmds[action.action]
+		let errorHandler = (e, result) => {
 			if (e !== null) {
 				this.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
 				this.status(this.STATUS_ERROR, result.error.code)
@@ -207,7 +207,7 @@ class instance extends instance_skel {
 			}
 		}
 
-		var options = {
+		let options = {
 			connection: {
 				rejectUnauthorized: self.config.rejectUnauthorized,
 			},
