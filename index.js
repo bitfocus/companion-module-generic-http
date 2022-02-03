@@ -2,7 +2,6 @@ const instance_skel = require('../../instance_skel')
 let debug = () => {}
 let log
 
-
 class instance extends instance_skel {
 	/**
 	 * Create an instance of the module
@@ -33,6 +32,13 @@ class instance extends instance_skel {
 				})
 
 				return updated
+			},
+
+			function v1_1_6(context, config) {
+				if (config.rejectUnauthorized === undefined) {
+					this.rejectUnauthorized = true
+					updated = true
+				}
 			},
 		]
 	}
@@ -78,6 +84,39 @@ class instance extends instance_skel {
 				id: 'prefix',
 				label: 'Base URL',
 				width: 12,
+			},
+			{
+				type: 'text',
+				id: 'rejectUnauthorizedInfo',
+				width: 12,
+				value: `
+					<hr />
+					<h5>WARNING</h5>
+					This module rejects server certificates considered invalid for the following reasons:
+					<ul>
+						<li>Certificate is expired</li>
+						<li>Certificate has the wrong host</li>
+						<li>Untrusted root certificate</li>
+						<li>Certificate is self-signed</li>
+					</ul>
+					<p>
+						We DO NOT recommend turning off this option. However, if you NEED to connect to a host
+						with a self-signed certificate you will need to set <strong>Unauthorized Certificates</strong>
+						to <strong>Accept</strong>.
+					</p>
+					<p><strong>USE AT YOUR OWN RISK!<strong></p>
+				`,
+			},
+			{
+				type: 'dropdown',
+				id: 'rejectUnauthorized',
+				label: 'Unauthorized Certificates',
+				width: 6,
+				default: true,
+				choices: [
+					{ id: true, label: 'Reject' },
+					{ id: false, label: 'Accept - Use at your own risk!' },
+				],
 			},
 		]
 	}
@@ -168,6 +207,12 @@ class instance extends instance_skel {
 			}
 		}
 
+		var options = {
+			connection: {
+				rejectUnauthorized: self.config.rejectUnauthorized,
+			},
+		}
+
 		this.system.emit('variable_parse', action.options.url, (value) => {
 			cmd = value
 		})
@@ -210,12 +255,12 @@ class instance extends instance_skel {
 		}
 
 		if (restCmd === 'rest_get') {
-			this.system.emit(restCmd, cmd, errorHandler, header)
+			this.system.emit(restCmd, cmd, errorHandler, header, options)
 		} else {
 			if (action.options.contenttype) {
 				header['Content-Type'] = action.options.contenttype
 			}
-			this.system.emit(restCmd, cmd, body, errorHandler, header)
+			this.system.emit(restCmd, cmd, body, errorHandler, header, options)
 		}
 	}
 }
