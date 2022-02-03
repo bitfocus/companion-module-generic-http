@@ -16,7 +16,7 @@ class instance extends instance_skel {
 		this.actions() // export actions
 	}
 
-	GetUpgradeScripts() {
+	static GetUpgradeScripts() {
 		return [
 			function v1_1_4(context, config, actions) {
 				let updated = false
@@ -36,7 +36,7 @@ class instance extends instance_skel {
 
 			function v1_1_6(context, config) {
 				if (config.rejectUnauthorized === undefined) {
-					this.rejectUnauthorized = true
+					config.rejectUnauthorized = true
 					updated = true
 				}
 			},
