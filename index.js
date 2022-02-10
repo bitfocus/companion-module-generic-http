@@ -13,6 +13,9 @@ class instance extends instance_skel {
 	 */
 	constructor(system, id, config) {
 		super(system, id, config)
+		this.custom_variables = {}
+		this.system.on('custom_variables_update', this.custom_variable_list_update.bind(this))
+		this.custom_variable_list_update()
 		this.actions() // export actions
 	}
 
@@ -125,7 +128,18 @@ class instance extends instance_skel {
 	destroy() {
 		debug('destroy')
 	}
-
+	
+	custom_variable_list_update = function (data) {
+		if (data) {
+			this.custom_variables = data
+		} else {
+			this.system.emit('custom_variables_get', (d) => {
+				this.custom_variables = d
+			})
+		}
+		this.actions()
+	}
+	
 	FIELD_URL = {
 		type: 'textwithvariables',
 		label: 'URL',
@@ -161,7 +175,19 @@ class instance extends instance_skel {
 		],
 	}
 
+	FIELD_CVAR = {}
+	
 	actions(system) {
+		this.FIELD_CVAR = {
+			type: 'dropdown',
+			label: 'Custom Variable',
+			id: 'httpcvar',
+			default: Object.keys(this.custom_variables)[0],
+			choices: Object.entries(this.custom_variables).map(([id, info]) => ({
+				id: id,
+				label: id,
+			})),
+		}
 		this.setActions({
 			post: {
 				label: 'POST',
@@ -170,6 +196,10 @@ class instance extends instance_skel {
 			get: {
 				label: 'GET',
 				options: [this.FIELD_URL, this.FIELD_HEADER],
+			},
+			getVAR: {
+				label: 'GET-CVAR',
+				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_CVAR],
 			},
 			put: {
 				label: 'PUT',
@@ -188,11 +218,13 @@ class instance extends instance_skel {
 
 	action(action) {
 		let cmd = ''
+		let cvar = ''
 		let body = {}
 		let header = {}
 		let restCmds = {
 			post: 'rest',
 			get: 'rest_get',
+			getVAR: 'rest_get',
 			put: 'rest_put',
 			patch: 'rest_patch',
 			delete: 'rest_delete',
@@ -255,7 +287,21 @@ class instance extends instance_skel {
 		}
 
 		if (restCmd === 'rest_get') {
-			this.system.emit(restCmd, cmd, errorHandler, header, options)
+			if(action.action == 'getVAR') {
+				this.system.emit('variable_parse', action.options.httpcvar, (value) => {
+					cvar = value
+				})
+				this.system.emit(restCmd, cmd, (err, result) => { 
+					if (err !== null) {
+						this.log('error', 'HTTP GET Request failed (' + result.error.code + ')')
+						this.system.emit('custom_variable_set_value', cvar, err.data.toString())
+					} else {
+						this.system.emit('custom_variable_set_value', cvar, result.data.toString())
+					}
+				}, header)
+			} else {
+				this.system.emit(restCmd, cmd, errorHandler, header, options)
+			}
 		} else {
 			if (action.options.contenttype) {
 				header['Content-Type'] = action.options.contenttype
