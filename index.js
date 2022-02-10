@@ -209,7 +209,7 @@ class instance extends instance_skel {
 
 		let options = {
 			connection: {
-				rejectUnauthorized: self.config.rejectUnauthorized,
+				rejectUnauthorized: this.config.rejectUnauthorized,
 			},
 		}
 
