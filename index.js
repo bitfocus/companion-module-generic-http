@@ -174,6 +174,13 @@ class instance extends instance_skel {
 			{ id: 'text/plain', label: 'text/plain' },
 		],
 	}
+	
+	FIELD_JSPATH = {
+		type: 'textwithvariables',
+		label: 'Path (seperated with comma)',
+		id: 'jspath',
+		default: '',
+	}
 
 	FIELD_CVAR = {}
 	
@@ -197,9 +204,13 @@ class instance extends instance_skel {
 				label: 'GET',
 				options: [this.FIELD_URL, this.FIELD_HEADER],
 			},
-			getVAR: {
-				label: 'GET-CVAR',
+			getRAW: {
+				label: 'GET-RAW',
 				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_CVAR],
+			},
+			getJSON: {
+				label: 'GET-JSON',
+				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_JSPATH, this.FIELD_CVAR],
 			},
 			put: {
 				label: 'PUT',
@@ -219,12 +230,14 @@ class instance extends instance_skel {
 	action(action) {
 		let cmd = ''
 		let cvar = ''
+		let jpath = ''
 		let body = {}
 		let header = {}
 		let restCmds = {
 			post: 'rest',
 			get: 'rest_get',
-			getVAR: 'rest_get',
+			getRAW: 'rest_get',
+			getJSON: 'rest_get',
 			put: 'rest_put',
 			patch: 'rest_patch',
 			delete: 'rest_delete',
@@ -287,18 +300,43 @@ class instance extends instance_skel {
 		}
 
 		if (restCmd === 'rest_get') {
-			if(action.action == 'getVAR') {
+			if(action.action == 'getRAW') {
 				this.system.emit('variable_parse', action.options.httpcvar, (value) => {
 					cvar = value
 				})
 				this.system.emit(restCmd, cmd, (err, result) => { 
 					if (err !== null) {
 						this.log('error', 'HTTP GET Request failed (' + result.error.code + ')')
-						this.system.emit('custom_variable_set_value', cvar, err.data.toString())
+						this.status(this.STATUS_ERROR, result.error.code)
+						return
 					} else {
 						this.system.emit('custom_variable_set_value', cvar, result.data.toString())
 					}
 				}, header)
+			} else if(action.action == 'getJSON'){
+				this.system.emit('variable_parse', action.options.httpcvar, (value) => {
+					cvar = value
+				})
+				this.system.emit('variable_parse', action.options.jspath, (value) => {
+					jpath = value
+				})
+				try {
+					jpath = jpath.split(',')
+					this.system.emit(restCmd, cmd, (err, result) => { 
+						if (err !== null) {
+							this.log('error', 'HTTP GET Request failed (' + result.error.code + ')')
+							this.status(this.STATUS_ERROR, result.error.code)
+							return
+						} else {
+							let res = jpath.reduce((o, n) => o[n], result.data)
+							this.system.emit('custom_variable_set_value', cvar, res)
+						}
+					}, header)
+				} catch(error) {
+					this.log('error', 'HTTP GET-JSON Parsing Error:' + error)
+					this.status(this.STATUS_ERROR, error)
+					return
+				}
 			} else {
 				this.system.emit(restCmd, cmd, errorHandler, header, options)
 			}
