@@ -1,6 +1,4 @@
 const instance_skel = require('../../instance_skel')
-let debug = () => {}
-let log
 
 class instance extends instance_skel {
 	/**
@@ -16,15 +14,15 @@ class instance extends instance_skel {
 
 		// Custom Variables Handling
 		this.customVariables = {}
-		system.emit('custom_variables_get', (variables) => {
-			this.customVariables = variables
-		})
-		system.on('custom_variables_update', (variables) => {
-			this.customVariables = variables
-			this.actions()
-		})
+		system.emit('custom_variables_get', this.updateCustomVariables)
+		system.on('custom_variables_update', this.updateCustomVariables)
 
 		this.actions() // export actions
+	}
+
+	updateCustomVariables = (variables) => {
+		this.customVariables = variables
+		this.actions()
 	}
 
 	static GetUpgradeScripts() {
@@ -74,9 +72,6 @@ class instance extends instance_skel {
 		}
 
 		this.status(this.STATE_OK)
-
-		debug = this.debug
-		log = this.log
 	}
 
 	// Return config fields for web config
@@ -134,8 +129,8 @@ class instance extends instance_skel {
 
 	// When module gets deleted
 	destroy() {
-		debug('destroy')
-		this.system.removeListener('custom_variables_update')
+		this.debug('destroy')
+		this.system.removeListener('custom_variables_update', this.updateCustomVariables)
 	}
 
 	FIELD_URL = {
@@ -241,7 +236,7 @@ class instance extends instance_skel {
 				// store json result data into retrieved dedicated custom variable
 				let jsonResultDataVariable = action.options.jsonResultDataVariable
 				if (jsonResultDataVariable !== '') {
-					debug('jsonResultDataVariable', jsonResultDataVariable)
+					this.debug('jsonResultDataVariable', jsonResultDataVariable)
 					let jsonResultData = JSON.stringify(result.data)
 					this.system.emit('custom_variable_set_value', jsonResultDataVariable, jsonResultData)
 				}
