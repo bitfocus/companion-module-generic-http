@@ -1,7 +1,7 @@
 const instance_skel = require('../../instance_skel')
 let debug = () => {}
 let log
-var jp = require('jsonpath');
+var jp = require('jsonpath')
 
 class instance extends instance_skel {
 	/**
@@ -24,7 +24,7 @@ class instance extends instance_skel {
 			this.customVariables = variables
 			this.actions()
 		})
-		
+
 		this.actions() // export actions
 	}
 
@@ -184,8 +184,7 @@ class instance extends instance_skel {
 	FIELD_JSON_DATA_VARIABLE = null
 
 	actions(system) {
-
-        this.FIELD_JSON_DATA_VARIABLE = {
+		this.FIELD_JSON_DATA_VARIABLE = {
 			type: 'dropdown',
 			label: 'JSON Response Data Variable',
 			id: 'jsonResultDataVariable',
@@ -195,9 +194,9 @@ class instance extends instance_skel {
 				label: id,
 			})),
 		}
-		this.FIELD_JSON_DATA_VARIABLE.choices.unshift({id:'', label:'<NONE>'})
+		this.FIELD_JSON_DATA_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
 
-        this.FIELD_TARGET_VARIABLE = {
+		this.FIELD_TARGET_VARIABLE = {
 			type: 'dropdown',
 			label: 'Target Variable',
 			id: 'targetVariable',
@@ -207,7 +206,7 @@ class instance extends instance_skel {
 				label: id,
 			})),
 		}
-		this.FIELD_TARGET_VARIABLE.choices.unshift({id:'', label:'<NONE>'})				
+		this.FIELD_TARGET_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
 
 		this.setActions({
 			post: {
@@ -272,7 +271,7 @@ class instance extends instance_skel {
 				}
 				this.status(this.STATUS_OK)
 			}
-		}		
+		}
 
 		let options = {
 			connection: {
@@ -282,15 +281,14 @@ class instance extends instance_skel {
 
 		//TODO: consider moving the setvar-action to companion-module-bitfocus-companion
 
-		// extract value from the stored json response data, assign to target variable		
+		// extract value from the stored json response data, assign to target variable
 		if (action.action === 'setvar') {
-
 			// get the json response data from the custom variable that holds the data
 			let jsonResultData = ''
 			let variableName = `custom_${action.options.jsonResultDataVariable}`
 			this.system.emit('variable_get', 'internal', variableName, (value) => {
 				jsonResultData = value
-				debug('jsonResultData', jsonResultData)				
+				debug('jsonResultData', jsonResultData)
 			})
 
 			// recreate a json object from stored json result data string
@@ -298,7 +296,10 @@ class instance extends instance_skel {
 			try {
 				objJson = JSON.parse(jsonResultData)
 			} catch (e) {
-				this.log('error', `HTTP ${action.action.toUpperCase()} Cannot create JSON object, malformed JSON data (${e.message})`)
+				this.log(
+					'error',
+					`HTTP ${action.action.toUpperCase()} Cannot create JSON object, malformed JSON data (${e.message})`
+				)
 				this.status(self.STATUS_ERROR, e.message)
 				return
 			}
@@ -310,14 +311,14 @@ class instance extends instance_skel {
 			} catch (error) {
 				this.log('error', `HTTP ${action.action.toUpperCase()} Cannot extract JSON value (${e.message})`)
 				this.status(this.STATUS_ERROR, error.message)
-				return		
+				return
 			}
 
-			this.system.emit('custom_variable_set_value', action.options.targetVariable, valueToSet)			
+			this.system.emit('custom_variable_set_value', action.options.targetVariable, valueToSet)
 
 			this.status(this.STATUS_OK)
 			return
-		}		
+		}
 
 		this.system.emit('variable_parse', action.options.url, (value) => {
 			cmd = value
