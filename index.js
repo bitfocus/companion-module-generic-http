@@ -1,7 +1,6 @@
 const instance_skel = require('../../instance_skel')
 let debug = () => {}
 let log
-var jp = require('jsonpath')
 
 class instance extends instance_skel {
 	/**
@@ -174,16 +173,9 @@ class instance extends instance_skel {
 		],
 	}
 
-	FIELD_JSON_PATH = {
-		type: 'textwithvariables',
-		label: 'Path (like $.age)',
-		id: 'jsonPath',
-		default: '',
-	}
-
 	FIELD_JSON_DATA_VARIABLE = null
 
-	actions(system) {
+	actions() {
 		this.FIELD_JSON_DATA_VARIABLE = {
 			type: 'dropdown',
 			label: 'JSON Response Data Variable',
@@ -195,18 +187,6 @@ class instance extends instance_skel {
 			})),
 		}
 		this.FIELD_JSON_DATA_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
-
-		this.FIELD_TARGET_VARIABLE = {
-			type: 'dropdown',
-			label: 'Target Variable',
-			id: 'targetVariable',
-			default: '',
-			choices: Object.entries(this.customVariables).map(([id, info]) => ({
-				id: id,
-				label: id,
-			})),
-		}
-		this.FIELD_TARGET_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
 
 		this.setActions({
 			post: {
@@ -228,10 +208,6 @@ class instance extends instance_skel {
 			delete: {
 				label: 'DELETE',
 				options: [this.FIELD_URL, this.FIELD_BODY, this.FIELD_HEADER],
-			},
-			setvar: {
-				label: 'SETVAR',
-				options: [this.FIELD_JSON_DATA_VARIABLE, this.FIELD_JSON_PATH, this.FIELD_TARGET_VARIABLE],
 			},
 		})
 	}
@@ -277,47 +253,6 @@ class instance extends instance_skel {
 			connection: {
 				rejectUnauthorized: this.config.rejectUnauthorized,
 			},
-		}
-
-		//TODO: consider moving the setvar-action to companion-module-bitfocus-companion
-
-		// extract value from the stored json response data, assign to target variable
-		if (action.action === 'setvar') {
-			// get the json response data from the custom variable that holds the data
-			let jsonResultData = ''
-			let variableName = `custom_${action.options.jsonResultDataVariable}`
-			this.system.emit('variable_get', 'internal', variableName, (value) => {
-				jsonResultData = value
-				debug('jsonResultData', jsonResultData)
-			})
-
-			// recreate a json object from stored json result data string
-			let objJson = ''
-			try {
-				objJson = JSON.parse(jsonResultData)
-			} catch (e) {
-				this.log(
-					'error',
-					`HTTP ${action.action.toUpperCase()} Cannot create JSON object, malformed JSON data (${e.message})`
-				)
-				this.status(self.STATUS_ERROR, e.message)
-				return
-			}
-
-			// extract the value via the given standard JSONPath expression
-			let valueToSet = ''
-			try {
-				valueToSet = jp.query(objJson, action.options.jsonPath)
-			} catch (error) {
-				this.log('error', `HTTP ${action.action.toUpperCase()} Cannot extract JSON value (${e.message})`)
-				this.status(this.STATUS_ERROR, error.message)
-				return
-			}
-
-			this.system.emit('custom_variable_set_value', action.options.targetVariable, valueToSet)
-
-			this.status(this.STATUS_OK)
-			return
 		}
 
 		this.system.emit('variable_parse', action.options.url, (value) => {
