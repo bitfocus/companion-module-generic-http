@@ -27,8 +27,5 @@
 	"bugs": {
 		"url": "https://github.com/bitfocus/companion-module-generic-http/issues"
 	},
-	"homepage": "https://github.com/bitfocus/companion-module-generic-http#readme",
-	"dependencies": {
-		"jsonpath": "^1.1.1"
-	}
+	"homepage": "https://github.com/bitfocus/companion-module-generic-http#readme"
 }
