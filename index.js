@@ -237,7 +237,7 @@ class instance extends instance_skel {
 				let jsonResultDataVariable = action.options.jsonResultDataVariable
 				if (jsonResultDataVariable !== '') {
 					this.debug('jsonResultDataVariable', jsonResultDataVariable)
-					let jsonResultData = JSON.stringify(result.data.toString()) //converted data to string since it was coming in as a buffer
+					let jsonResultData = result.data.toString() //converted data to string since it was coming in as a buffer
 					this.system.emit('custom_variable_set_value', jsonResultDataVariable, jsonResultData)
 				}
 				this.status(this.STATUS_OK)
