@@ -183,6 +183,20 @@ class instance extends instance_skel {
 		}
 		this.FIELD_JSON_DATA_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
 
+		this.FIELD_JSON_DATA_VARIABLE_TOSTRING = {
+			type: 'checkbox',
+			label: 'Convert Result To String (from Buffer)',
+			id: 'result_tostring',
+			default: true
+		}
+
+		this.FIELD_JSON_DATA_VARIABLE_STRINGIFY = {
+			type: 'checkbox',
+			label: 'JSON Stringify Result',
+			id: 'result_stringify',
+			default: true
+		}
+
 		this.setActions({
 			post: {
 				label: 'POST',
@@ -190,7 +204,7 @@ class instance extends instance_skel {
 			},
 			get: {
 				label: 'GET',
-				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_JSON_DATA_VARIABLE],
+				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_JSON_DATA_VARIABLE, this.FIELD_JSON_DATA_VARIABLE_TOSTRING, this.FIELD_JSON_DATA_VARIABLE_STRINGIFY],
 			},
 			put: {
 				label: 'PUT',
@@ -237,7 +251,27 @@ class instance extends instance_skel {
 				let jsonResultDataVariable = action.options.jsonResultDataVariable
 				if (jsonResultDataVariable !== '') {
 					this.debug('jsonResultDataVariable', jsonResultDataVariable)
-					let jsonResultData = result.data.toString() //converted data to string since it was coming in as a buffer
+					let resultData = result.data;
+
+					//this allows the results to either be converted from buffer to string, or JSON stringified based on the user selection in the action
+					if (this.result_tostring) {
+						try {
+							resultData = resultData.toString();
+						}
+						catch(error) {
+							//error converting to string
+						}
+					}
+					if (this.result_stringify) {
+						try {
+							resultData = JSON.stringify(resultData);
+						}
+						catch(error) {
+							//error stringifying
+						}
+					}
+					let jsonResultData = resultData;
+
 					this.system.emit('custom_variable_set_value', jsonResultDataVariable, jsonResultData)
 				}
 				this.status(this.STATUS_OK)
@@ -292,6 +326,20 @@ class instance extends instance_skel {
 		}
 
 		if (restCmd === 'rest_get') {
+			if (action.options.result_tostring) {
+				this.result_tostring = true;
+			}
+			else {
+				this.result_tostring = false;
+			}
+
+			if (action.options.result_stringify) {
+				this.result_stringify = true;
+			}
+			else {
+				this.result_stringify = false;
+			}
+
 			this.system.emit(restCmd, cmd, jsonResultDataHandler, header, options)
 		} else {
 			if (action.options.contenttype) {
