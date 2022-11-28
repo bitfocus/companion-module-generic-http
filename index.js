@@ -1,352 +1,215 @@
-const instance_skel = require('../../instance_skel')
+import { InstanceBase, runEntrypoint, InstanceStatus } from '@companion-module/base'
+import got from 'got'
+import { configFields } from './config.js'
+import { upgradeScripts } from './upgrade.js'
+import { FIELDS } from './fields.js'
 
-class instance extends instance_skel {
-	/**
-	 * Create an instance of the module
-	 *
-	 * @param {EventEmitter} system - the brains of the operation
-	 * @param {string} id - the instance ID
-	 * @param {Object} config - saved user configuration parameters
-	 * @since 1.0.0
-	 */
-	constructor(system, id, config) {
-		super(system, id, config)
-
-		// Custom Variables Handling
-		this.customVariables = {}
-		system.emit('custom_variables_get', this.updateCustomVariables)
-		system.on('custom_variables_update', this.updateCustomVariables)
-
-		this.actions() // export actions
-	}
-
-	updateCustomVariables = (variables) => {
-		this.customVariables = variables
-		this.actions()
-	}
-
-	static GetUpgradeScripts() {
-		return [
-			function v1_1_4(context, config, actions) {
-				let updated = false
-
-				actions.forEach((action) => {
-					// set default content-type on older actions
-					if (['post', 'put', 'patch'].includes(action.action)) {
-						if (action.options.contenttype === undefined) {
-							action.options.contenttype = 'application/json'
-							updated = true
-						}
-					}
-				})
-
-				return updated
-			},
-
-			function v1_1_6(context, config) {
-				if (config.rejectUnauthorized === undefined) {
-					config.rejectUnauthorized = true
-					updated = true
-				}
-			},
-		]
-	}
-
+class GenericHttpInstance extends InstanceBase {
 	updateConfig(config) {
 		this.config = config
 
-		if (this.config.prefix !== undefined && this.config.prefix.length > 0) {
-			this.FIELD_URL.label = 'URI'
-		} else {
-			this.FIELD_URL.label = 'URL'
-		}
-
-		this.actions()
+		this.initActions()
 	}
 
-	init() {
-		if (this.config.prefix !== undefined && this.config.prefix.length > 0) {
-			this.FIELD_URL.label = 'URI'
-		} else {
-			this.FIELD_URL.label = 'URL'
-		}
+	init(config) {
+		this.config = config
 
-		this.status(this.STATE_OK)
+		this.updateStatus(InstanceStatus.Ok)
+
+		this.initActions()
 	}
 
 	// Return config fields for web config
-	config_fields() {
-		return [
-			{
-				type: 'text',
-				id: 'info',
-				width: 12,
-				label: 'Information',
-				value:
-					"<strong>PLEASE READ THIS!</strong> Generic modules is only for use with custom applications. If you use this module to control a device or software on the market that more than you are using, <strong>PLEASE let us know</strong> about this software, so we can make a proper module for it. If we already support this and you use this to trigger a feature our module doesnt support, please let us know. We want companion to be as easy as possible to use for anyone.<br /><br />Use the 'Base URL' field below to define a starting URL for the instance's commands: e.g. 'http://server.url/path/'.  <b>This field will be ignored if a command uses a full URL.</b>",
-			},
-			{
-				type: 'textinput',
-				id: 'prefix',
-				label: 'Base URL',
-				width: 12,
-			},
-			{
-				type: 'text',
-				id: 'rejectUnauthorizedInfo',
-				width: 12,
-				value: `
-					<hr />
-					<h5>WARNING</h5>
-					This module rejects server certificates considered invalid for the following reasons:
-					<ul>
-						<li>Certificate is expired</li>
-						<li>Certificate has the wrong host</li>
-						<li>Untrusted root certificate</li>
-						<li>Certificate is self-signed</li>
-					</ul>
-					<p>
-						We DO NOT recommend turning off this option. However, if you NEED to connect to a host
-						with a self-signed certificate you will need to set <strong>Unauthorized Certificates</strong>
-						to <strong>Accept</strong>.
-					</p>
-					<p><strong>USE AT YOUR OWN RISK!<strong></p>
-				`,
-			},
-			{
-				type: 'dropdown',
-				id: 'rejectUnauthorized',
-				label: 'Unauthorized Certificates',
-				width: 6,
-				default: true,
-				choices: [
-					{ id: true, label: 'Reject' },
-					{ id: false, label: 'Accept - Use at your own risk!' },
-				],
-			},
-		]
+	getConfigFields() {
+		return configFields
 	}
 
 	// When module gets deleted
-	destroy() {
-		this.debug('destroy')
-		this.system.removeListener('custom_variables_update', this.updateCustomVariables)
+	async destroy() {
+		// Nothing to do
 	}
 
-	FIELD_URL = {
-		type: 'textwithvariables',
-		label: 'URL',
-		id: 'url',
-		default: '',
-	}
-
-	FIELD_BODY = {
-		type: 'textwithvariables',
-		label: 'Body',
-		id: 'body',
-		default: '{}',
-	}
-
-	FIELD_HEADER = {
-		type: 'textwithvariables',
-		label: 'header input(JSON)',
-		id: 'header',
-		default: '',
-	}
-
-	FIELD_CONTENTTYPE = {
-		type: 'dropdown',
-		label: 'Content Type',
-		id: 'contenttype',
-		default: 'application/json',
-		choices: [
-			{ id: 'application/json', label: 'application/json' },
-			{ id: 'application/x-www-form-urlencoded', label: 'application/x-www-form-urlencoded' },
-			{ id: 'application/xml', label: 'application/xml' },
-			{ id: 'text/html', label: 'text/html' },
-			{ id: 'text/plain', label: 'text/plain' },
-		],
-	}
-
-	FIELD_JSON_DATA_VARIABLE = null
-
-	actions() {
-		this.FIELD_JSON_DATA_VARIABLE = {
-			type: 'dropdown',
-			label: 'JSON Response Data Variable',
-			id: 'jsonResultDataVariable',
-			default: '',
-			choices: Object.entries(this.customVariables).map(([id, info]) => ({
-				id: id,
-				label: id,
-			})),
-		}
-		this.FIELD_JSON_DATA_VARIABLE.choices.unshift({ id: '', label: '<NONE>' })
-
-		this.FIELD_JSON_DATA_VARIABLE_TOSTRING = {
-			type: 'checkbox',
-			label: 'Convert Result To String (from Buffer)',
-			id: 'result_tostring',
-			default: true
+	async prepareQuery(action, includeBody) {
+		let url = await this.parseVariablesInString(action.options.url || '')
+		if (url.substring(0, 4) !== 'http') {
+			if (this.config.prefix && this.config.prefix.length > 0) {
+				url = `${this.config.prefix}${url.trim()}`
+			}
 		}
 
-		this.FIELD_JSON_DATA_VARIABLE_STRINGIFY = {
-			type: 'checkbox',
-			label: 'JSON Stringify Result',
-			id: 'result_stringify',
-			default: true
-		}
-
-		this.setActions({
-			post: {
-				label: 'POST',
-				options: [this.FIELD_URL, this.FIELD_BODY, this.FIELD_HEADER, this.FIELD_CONTENTTYPE],
-			},
-			get: {
-				label: 'GET',
-				options: [this.FIELD_URL, this.FIELD_HEADER, this.FIELD_JSON_DATA_VARIABLE, this.FIELD_JSON_DATA_VARIABLE_TOSTRING, this.FIELD_JSON_DATA_VARIABLE_STRINGIFY],
-			},
-			put: {
-				label: 'PUT',
-				options: [this.FIELD_URL, this.FIELD_BODY, this.FIELD_HEADER, this.FIELD_CONTENTTYPE],
-			},
-			patch: {
-				label: 'PATCH',
-				options: [this.FIELD_URL, this.FIELD_BODY, this.FIELD_HEADER, this.FIELD_CONTENTTYPE],
-			},
-			delete: {
-				label: 'DELETE',
-				options: [this.FIELD_URL, this.FIELD_BODY, this.FIELD_HEADER],
-			},
-		})
-	}
-
-	action(action) {
-		let cmd = ''
 		let body = {}
-		let header = {}
-		let restCmds = {
-			post: 'rest',
-			get: 'rest_get',
-			put: 'rest_put',
-			patch: 'rest_patch',
-			delete: 'rest_delete',
-		}
-		let restCmd = restCmds[action.action]
-		let errorHandler = (e, result) => {
-			if (e !== null) {
-				this.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
-				this.status(this.STATUS_ERROR, result.error.code)
-			} else {
-				this.status(this.STATUS_OK)
-			}
-		}
+		if (includeBody && action.options.body && action.options.body.trim() !== '') {
+			body = await this.parseVariablesInString(action.options.body || '')
 
-		let jsonResultDataHandler = (e, result) => {
-			if (e !== null) {
-				this.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
-				this.status(this.STATUS_ERROR, result.error.code)
-			} else {
-				// store json result data into retrieved dedicated custom variable
-				let jsonResultDataVariable = action.options.jsonResultDataVariable
-				if (jsonResultDataVariable !== '') {
-					this.debug('jsonResultDataVariable', jsonResultDataVariable)
-					let resultData = result.data;
-
-					//this allows the results to either be converted from buffer to string, or JSON stringified based on the user selection in the action
-					if (this.result_tostring) {
-						try {
-							resultData = resultData.toString();
-						}
-						catch(error) {
-							//error converting to string
-						}
-					}
-					if (this.result_stringify) {
-						try {
-							resultData = JSON.stringify(resultData);
-						}
-						catch(error) {
-							//error stringifying
-						}
-					}
-					let jsonResultData = resultData;
-
-					this.system.emit('custom_variable_set_value', jsonResultDataVariable, jsonResultData)
-				}
-				this.status(this.STATUS_OK)
-			}
-		}
-
-		let options = {
-			connection: {
-				rejectUnauthorized: this.config.rejectUnauthorized,
-			},
-		}
-
-		this.system.emit('variable_parse', action.options.url, (value) => {
-			cmd = value
-		})
-
-		if (action.options.url.substring(0, 4) !== 'http') {
-			if (this.config.prefix.length > 0) {
-				cmd = `${this.config.prefix}${cmd.trim()}`
-			}
-		}
-
-		if (action.options.body && action.options.body.trim() !== '') {
-			this.system.emit('variable_parse', action.options.body, (value) => {
-				body = value
-			})
-
-			if (action.options.contenttype && action.options.contenttype === 'application/json') {
+			if (action.options.contenttype === 'application/json') {
 				//only parse the body if we are explicitly sending application/json
 				try {
 					body = JSON.parse(body)
 				} catch (e) {
 					this.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
-					this.status(this.STATUS_ERROR, e.message)
+					this.updateStatus(InstanceStatus.UnknownError, e.message)
 					return
 				}
 			}
 		}
 
+		let headers = {}
 		if (action.options.header.trim() !== '') {
-			this.system.emit('variable_parse', action.options.header, (value) => {
-				header = value
-			})
+			const headersStr = await this.parseVariablesInString(action.options.header || '')
 
 			try {
-				header = JSON.parse(header)
+				headers = JSON.parse(headersStr)
 			} catch (e) {
 				this.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`)
-				this.status(this.STATUS_ERROR, e.message)
+				this.updateStatus(InstanceStatus.UnknownError, e.message)
 				return
 			}
 		}
 
-		if (restCmd === 'rest_get') {
-			if (action.options.result_tostring) {
-				this.result_tostring = true;
-			}
-			else {
-				this.result_tostring = false;
-			}
+		if (includeBody && action.options.contenttype) {
+			headers['Content-Type'] = action.options.contenttype
+		}
 
-			if (action.options.result_stringify) {
-				this.result_stringify = true;
-			}
-			else {
-				this.result_stringify = false;
-			}
+		const options = {
+			https: {
+				rejectUnauthorized: this.config.rejectUnauthorized,
+			},
 
-			this.system.emit(restCmd, cmd, jsonResultDataHandler, header, options)
-		} else {
-			if (action.options.contenttype) {
-				header['Content-Type'] = action.options.contenttype
+			headers,
+		}
+
+		if (includeBody) {
+			if (typeof body === 'string') {
+				options.body = body
+			} else if (body) {
+				options.json = body
 			}
-			this.system.emit(restCmd, cmd, body, errorHandler, header, options)
+		}
+
+		return {
+			url,
+			options,
 		}
 	}
+
+	initActions() {
+		const urlLabel = this.config.prefix ? 'URI' : 'URL'
+
+		this.setActionDefinitions({
+			post: {
+				name: 'POST',
+				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				callback: async (action) => {
+					const { url, options } = await this.prepareQuery(action, true)
+
+					try {
+						await got.post(url, options)
+
+						this.updateStatus(InstanceStatus.Ok)
+					} catch (e) {
+						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+			get: {
+				name: 'GET',
+				options: [
+					FIELDS.Url(urlLabel),
+					FIELDS.Header,
+					{
+						type: 'custom-variable',
+						label: 'JSON Response Data Variable',
+						id: 'jsonResultDataVariable',
+					},
+					{
+						type: 'checkbox',
+						label: 'JSON Stringify Result',
+						id: 'result_stringify',
+						default: true,
+					},
+				],
+				callback: async (action) => {
+					const { url, options } = await this.prepareQuery(action, false)
+
+					try {
+						const response = await got.get(url, options)
+
+						// store json result data into retrieved dedicated custom variable
+						const jsonResultDataVariable = action.options.jsonResultDataVariable
+						if (jsonResultDataVariable) {
+							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
+
+							let resultData = response.body
+
+							if (!action.options.result_stringify) {
+								try {
+									resultData = JSON.parse(resultData)
+								} catch (error) {
+									//error stringifying
+								}
+							}
+
+							this.setCustomVariableValue(jsonResultDataVariable, resultData)
+						}
+
+						this.updateStatus(InstanceStatus.Ok)
+					} catch (e) {
+						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+			put: {
+				name: 'PUT',
+				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				callback: async (action) => {
+					const { url, options } = await this.prepareQuery(action, true)
+
+					try {
+						await got.put(url, options)
+
+						this.updateStatus(InstanceStatus.Ok)
+					} catch (e) {
+						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+			patch: {
+				name: 'PATCH',
+				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				callback: async (action) => {
+					const { url, options } = await this.prepareQuery(action, true)
+
+					try {
+						await got.patch(url, options)
+
+						this.updateStatus(InstanceStatus.Ok)
+					} catch (e) {
+						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+			delete: {
+				name: 'DELETE',
+				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header],
+				callback: async (action) => {
+					const { url, options } = await this.prepareQuery(action, true)
+
+					try {
+						await got.delete(url, options)
+
+						this.updateStatus(InstanceStatus.Ok)
+					} catch (e) {
+						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+		})
+	}
 }
-exports = module.exports = instance
+
+runEntrypoint(GenericHttpInstance, upgradeScripts)

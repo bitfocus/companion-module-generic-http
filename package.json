@@ -1,15 +1,8 @@
 {
 	"name": "generic-http",
-	"version": "1.2.5",
-	"api_version": "1.0.0",
-	"keywords": [
-		"Protocol",
-		"Generic"
-	],
-	"manufacturer": "Generic",
-	"product": "HTTP Requests",
-	"shortname": "http",
+	"version": "2.0.0",
 	"main": "index.js",
+	"type": "module",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -17,15 +10,12 @@
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-generic-http.git"
 	},
-	"author": "William Viker <william@bitfocus.io>",
-	"contributors": [
-		"Keith Rocheck <keith.rocheck@gmail.com>",
-		"Jeffrey Davidsz <jeffrey.davidsz@vicreo.eu>",
-		"Joseph Adams <josephdadams@gmail.com>"
-	],
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-generic-http/issues"
+	"dependencies": {
+		"@companion-module/base": "~0.6.1",
+		"got": "^12.5.3"
 	},
-	"homepage": "https://github.com/bitfocus/companion-module-generic-http#readme"
+	"devDependencies": {
+		"@companion-module/tools": "^0.5.0"
+	}
 }
