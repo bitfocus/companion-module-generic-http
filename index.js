@@ -5,7 +5,7 @@ import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
 
 class GenericHttpInstance extends InstanceBase {
-	updateConfig(config) {
+	configUpdated(config) {
 		this.config = config
 
 		this.initActions()
