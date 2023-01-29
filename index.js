@@ -3,8 +3,10 @@ import got from 'got'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
-import jimp from 'jimp'
-import Jimp from 'jimp'
+import JimpRaw from 'jimp'
+
+// Webpack makes a mess..
+const Jimp = JimpRaw.default || JimpRaw
 
 class GenericHttpInstance extends InstanceBase {
 	configUpdated(config) {
