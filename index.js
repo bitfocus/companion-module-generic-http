@@ -3,12 +3,15 @@ import got from 'got'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
+import jimp from 'jimp'
+import Jimp from 'jimp'
 
 class GenericHttpInstance extends InstanceBase {
 	configUpdated(config) {
 		this.config = config
 
 		this.initActions()
+		this.initFeedbacks()
 	}
 
 	init(config) {
@@ -17,6 +20,7 @@ class GenericHttpInstance extends InstanceBase {
 		this.updateStatus(InstanceStatus.Ok)
 
 		this.initActions()
+		this.initFeedbacks()
 	}
 
 	// Return config fields for web config
@@ -26,11 +30,14 @@ class GenericHttpInstance extends InstanceBase {
 
 	// When module gets deleted
 	async destroy() {
-		// Nothing to do
+		// Stop any running feedback timers
+		for (const timer of Object.values(this.feedbackTimers)) {
+			clearInterval(timer)
+		}
 	}
 
-	async prepareQuery(action, includeBody) {
-		let url = await this.parseVariablesInString(action.options.url || '')
+	async prepareQuery(context, action, includeBody) {
+		let url = await context.parseVariablesInString(action.options.url || '')
 		if (url.substring(0, 4) !== 'http') {
 			if (this.config.prefix && this.config.prefix.length > 0) {
 				url = `${this.config.prefix}${url.trim()}`
@@ -39,7 +46,7 @@ class GenericHttpInstance extends InstanceBase {
 
 		let body = {}
 		if (includeBody && action.options.body && action.options.body.trim() !== '') {
-			body = await this.parseVariablesInString(action.options.body || '')
+			body = await context.parseVariablesInString(action.options.body || '')
 
 			if (action.options.contenttype === 'application/json') {
 				//only parse the body if we are explicitly sending application/json
@@ -55,7 +62,7 @@ class GenericHttpInstance extends InstanceBase {
 
 		let headers = {}
 		if (action.options.header.trim() !== '') {
-			const headersStr = await this.parseVariablesInString(action.options.header || '')
+			const headersStr = await context.parseVariablesInString(action.options.header || '')
 
 			try {
 				headers = JSON.parse(headersStr)
@@ -205,6 +212,62 @@ class GenericHttpInstance extends InstanceBase {
 					} catch (e) {
 						this.log('error', `HTTP GET Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
+					}
+				},
+			},
+		})
+	}
+
+	feedbackTimers = {}
+
+	initFeedbacks() {
+		const urlLabel = this.config.prefix ? 'URI' : 'URL'
+
+		this.setFeedbackDefinitions({
+			imageFromUrl: {
+				type: 'advanced',
+				name: 'Image from URL',
+				options: [FIELDS.Url(urlLabel), FIELDS.Header, FIELDS.PollInterval],
+				subscribe: (feedback) => {
+					// Ensure existing timer is cleared
+					if (this.feedbackTimers[feedback.id]) {
+						clearInterval(this.feedbackTimers[feedback.id])
+						delete this.feedbackTimers[feedback.id]
+					}
+
+					// Start new timer if needed
+					if (feedback.options.interval) {
+						this.feedbackTimers[feedback.id] = setInterval(() => {
+							this.checkFeedbacksById(feedback.id)
+						}, feedback.options.interval)
+					}
+				},
+				unsubscribe: (feedback) => {
+					// Ensure timer is cleared
+					if (this.feedbackTimers[feedback.id]) {
+						clearInterval(this.feedbackTimers[feedback.id])
+						delete this.feedbackTimers[feedback.id]
+					}
+				},
+				callback: async (feedback, context) => {
+					try {
+						const { url, options } = await this.prepareQuery(context, feedback, false)
+
+						const res = await got.get(url, options)
+
+						// Scale image to a sensible size
+						const img = await Jimp.read(res.rawBody)
+						const png64 = await img
+							.scaleToFit(feedback.image?.width ?? 72, feedback.image?.height ?? 72)
+							.getBase64Async('image/png')
+
+						return {
+							png64,
+						}
+					} catch (e) {
+						// Image failed to load so log it and output nothing
+						this.log('error', `Failed to fetch image: ${e}`)
+						return {}
 					}
 				},
 			},

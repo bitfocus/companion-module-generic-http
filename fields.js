@@ -36,4 +36,12 @@ export const FIELDS = {
 			{ id: 'text/plain', label: 'text/plain' },
 		],
 	},
+
+	PollInterval: {
+		type: 'number',
+		label: 'Poll Interval (0 to disable)',
+		id: 'interval',
+		default: 0,
+		min: 0,
+	},
 }
