@@ -108,8 +108,8 @@ class GenericHttpInstance extends InstanceBase {
 			post: {
 				name: 'POST',
 				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
-				callback: async (action) => {
-					const { url, options } = await this.prepareQuery(action, true)
+				callback: async (action, context) => {
+					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
 						await got.post(url, options)
@@ -138,8 +138,8 @@ class GenericHttpInstance extends InstanceBase {
 						default: true,
 					},
 				],
-				callback: async (action) => {
-					const { url, options } = await this.prepareQuery(action, false)
+				callback: async (action, context) => {
+					const { url, options } = await this.prepareQuery(context, action, false)
 
 					try {
 						const response = await got.get(url, options)
@@ -172,8 +172,8 @@ class GenericHttpInstance extends InstanceBase {
 			put: {
 				name: 'PUT',
 				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
-				callback: async (action) => {
-					const { url, options } = await this.prepareQuery(action, true)
+				callback: async (action, context) => {
+					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
 						await got.put(url, options)
@@ -188,8 +188,8 @@ class GenericHttpInstance extends InstanceBase {
 			patch: {
 				name: 'PATCH',
 				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
-				callback: async (action) => {
-					const { url, options } = await this.prepareQuery(action, true)
+				callback: async (action, context) => {
+					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
 						await got.patch(url, options)
@@ -204,8 +204,8 @@ class GenericHttpInstance extends InstanceBase {
 			delete: {
 				name: 'DELETE',
 				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header],
-				callback: async (action) => {
-					const { url, options } = await this.prepareQuery(action, true)
+				callback: async (action, context) => {
+					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
 						await got.delete(url, options)
