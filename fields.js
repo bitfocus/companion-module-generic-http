@@ -39,7 +39,7 @@ export const FIELDS = {
 
 	PollInterval: {
 		type: 'number',
-		label: 'Poll Interval (0 to disable)',
+		label: 'Poll Interval (ms) (0 to disable)',
 		id: 'interval',
 		default: 0,
 		min: 0,
