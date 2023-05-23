@@ -55,7 +55,7 @@ class GenericHttpInstance extends InstanceBase {
 				try {
 					body = JSON.parse(body)
 				} catch (e) {
-					this.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
+					this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
 					this.updateStatus(InstanceStatus.UnknownError, e.message)
 					return
 				}
@@ -69,7 +69,7 @@ class GenericHttpInstance extends InstanceBase {
 			try {
 				headers = JSON.parse(headersStr)
 			} catch (e) {
-				this.log('error', `HTTP ${action.action.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`)
+				this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`)
 				this.updateStatus(InstanceStatus.UnknownError, e.message)
 				return
 			}
