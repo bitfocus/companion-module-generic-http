@@ -89,6 +89,7 @@ class GenericHttpInstance extends InstanceBase {
 
 		if (includeBody) {
 			if (typeof body === 'string') {
+				body = body.replace(/\\n/g, '\n')
 				options.body = body
 			} else if (body) {
 				options.json = body
