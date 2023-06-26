@@ -1,9 +1,9 @@
 export const upgradeScripts = [
 	function v1_1_4(context, props) {
 		const result = {
-			config: null,
-			actions: [],
-			feedbacks: [],
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
 		}
 
 		for (const action of props.actions) {
@@ -11,7 +11,7 @@ export const upgradeScripts = [
 			if (['post', 'put', 'patch'].includes(action.actionId)) {
 				if (action.options.contenttype === undefined) {
 					action.options.contenttype = 'application/json'
-					result.actions.push(action)
+					result.updatedActions.push(action)
 				}
 			}
 		}
@@ -21,14 +21,14 @@ export const upgradeScripts = [
 
 	function v1_1_6(context, props) {
 		const result = {
-			config: null,
-			actions: [],
-			feedbacks: [],
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
 		}
 
 		if (props.config && props.config.rejectUnauthorized === undefined) {
 			props.config.rejectUnauthorized = true
-			result.config = props.config
+			result.updatedConfig = props.config
 		}
 
 		return result
