@@ -89,6 +89,7 @@ class GenericHttpInstance extends InstanceBase {
 
 		if (includeBody) {
 			if (typeof body === 'string') {
+				body = body.replace(/\\n/g, '\n')
 				options.body = body
 			} else if (body) {
 				options.json = body
@@ -116,7 +117,7 @@ class GenericHttpInstance extends InstanceBase {
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
-						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.log('error', `HTTP POST Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
 					}
 				},
@@ -180,7 +181,7 @@ class GenericHttpInstance extends InstanceBase {
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
-						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.log('error', `HTTP PUT Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
 					}
 				},
@@ -196,7 +197,7 @@ class GenericHttpInstance extends InstanceBase {
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
-						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.log('error', `HTTP PATCH Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
 					}
 				},
@@ -212,7 +213,7 @@ class GenericHttpInstance extends InstanceBase {
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
-						this.log('error', `HTTP GET Request failed (${e.message})`)
+						this.log('error', `HTTP DELETE Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
 					}
 				},
