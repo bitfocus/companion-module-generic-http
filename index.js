@@ -108,13 +108,46 @@ class GenericHttpInstance extends InstanceBase {
 		this.setActionDefinitions({
 			post: {
 				name: 'POST',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					 {
+						type: 'custom-variable',
+						label: 'JSON Response Data Variable',
+						id: 'jsonResultDataVariable',
+					},
+					{
+						type: 'checkbox',
+						label: 'JSON Stringify Result',
+						id: 'result_stringify',
+						default: true,
+					}
+				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.post(url, options)
+						const response = await got.post(url, options)
 
+						// store json result data into retrieved dedicated custom variable
+						const jsonResultDataVariable = action.options.jsonResultDataVariable
+						if (jsonResultDataVariable) {
+							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
+
+							let resultData = response.body
+
+							if (!action.options.result_stringify) {
+								try {
+									resultData = JSON.parse(resultData)
+								} catch (error) {
+									//error stringifying
+								}
+							}
+
+							this.setCustomVariableValue(jsonResultDataVariable, resultData)
+						}
+						
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP POST Request failed (${e.message})`)
