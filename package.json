@@ -18,5 +18,6 @@
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^1.5.1"
-	}
+	},
+	"packageManager": "yarn@4.4.1"
 }
