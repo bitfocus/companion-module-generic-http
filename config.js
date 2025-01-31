@@ -16,6 +16,21 @@ export const configFields = [
 	},
 	{
 		type: 'static-text',
+		id: 'proxies',
+		width: 12,
+		label: 'Proxies',
+		value:
+			"Enter proxy config below",
+	},
+	{
+		type: 'textinput',
+		id: 'proxyAddress',
+		label: 'Proxy Address',
+		width: 12,
+		default: '',
+	},
+	{
+		type: 'static-text',
 		id: 'rejectUnauthorizedInfo',
 		width: 12,
 		value: `

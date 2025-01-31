@@ -1,5 +1,6 @@
 import { InstanceBase, runEntrypoint, InstanceStatus } from '@companion-module/base'
 import got from 'got'
+import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
@@ -93,6 +94,17 @@ class GenericHttpInstance extends InstanceBase {
 				options.body = body
 			} else if (body) {
 				options.json = body
+			}
+		}
+
+		if(this.config.proxyAddress && this.config.proxyAddress.length > 0) {
+			options.agent = {
+				http: new HttpProxyAgent({
+					proxy: this.config.proxyAddress
+				}),
+				https: new HttpsProxyAgent({
+					proxy: this.config.proxyAddress
+				})
 			}
 		}
 
