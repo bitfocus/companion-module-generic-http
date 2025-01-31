@@ -1974,6 +1974,7 @@ __metadata:
     "@companion-module/base": "npm:~1.10.0"
     "@companion-module/tools": "npm:^1.5.1"
     got: "npm:^13.0.0"
+    hpagent: "npm:^1.2.0"
     jimp: "npm:^0.22.12"
   languageName: unknown
   linkType: soft
@@ -2135,6 +2136,13 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/5d415b114f410661208c95e7ab4879f1cc2765b8daceff4dc8718317d1cb7b9ffa7c5d1eafd9a4389c9aab7445d6ea88e05f3096cb1e529618b55304956b87fc
+  languageName: node
+  linkType: hard
+
+"hpagent@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "hpagent@npm:1.2.0"
+  checksum: 10c0/505ef42e5e067dba701ea21e7df9fa73f6f5080e59d53680829827d34cd7040f1ecf7c3c8391abe9df4eb4682ef4a4321608836b5b70a61b88c1b3a03d77510b
   languageName: node
   linkType: hard
 

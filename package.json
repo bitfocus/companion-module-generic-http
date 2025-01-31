@@ -14,6 +14,7 @@
 	"dependencies": {
 		"@companion-module/base": "~1.10.0",
 		"got": "^13.0.0",
+		"hpagent": "^1.2.0",
 		"jimp": "^0.22.12"
 	},
 	"devDependencies": {

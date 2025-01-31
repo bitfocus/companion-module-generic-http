@@ -15,6 +15,14 @@ export const configFields = [
 		default: '',
 	},
 	{
+		type: 'textinput',
+		id: 'proxyAddress',
+		label: 'Proxy Address',
+		tooltip: 'E.g. http://username:password@proxy-server:8080',
+		width: 12,
+		default: '',
+	},
+	{
 		type: 'static-text',
 		id: 'rejectUnauthorizedInfo',
 		width: 12,
