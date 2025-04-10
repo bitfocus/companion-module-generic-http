@@ -124,17 +124,8 @@ class GenericHttpInstance extends InstanceBase {
 					  FIELDS.Body,
 					  FIELDS.Header,
 					  FIELDS.ContentType,
-					 {
-						type: 'custom-variable',
-						label: 'JSON Response Data Variable',
-						id: 'jsonResultDataVariable',
-					},
-					{
-						type: 'checkbox',
-						label: 'JSON Stringify Result',
-						id: 'result_stringify',
-						default: true,
-					}
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -169,20 +160,10 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			get: {
 				name: 'GET',
-				options: [
-					FIELDS.Url(urlLabel),
-					FIELDS.Header,
-					{
-						type: 'custom-variable',
-						label: 'JSON Response Data Variable',
-						id: 'jsonResultDataVariable',
-					},
-					{
-						type: 'checkbox',
-						label: 'JSON Stringify Result',
-						id: 'result_stringify',
-						default: true,
-					},
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Header,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, false)
