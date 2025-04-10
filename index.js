@@ -192,12 +192,20 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			put: {
 				name: 'PUT',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.put(url, options)
+						const response = await got.put(url, options)
+
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -208,12 +216,20 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			patch: {
 				name: 'PATCH',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.patch(url, options)
+						const response = await got.patch(url, options)
+
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -224,12 +240,18 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			delete: {
 				name: 'DELETE',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
+
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.delete(url, options)
+						const response = await got.delete(url, options)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
