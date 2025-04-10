@@ -159,7 +159,7 @@ class GenericHttpInstance extends InstanceBase {
 
 							this.setCustomVariableValue(jsonResultDataVariable, resultData)
 						}
-						
+
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP POST Request failed (${e.message})`)
