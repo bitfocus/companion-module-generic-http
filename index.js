@@ -114,6 +114,32 @@ class GenericHttpInstance extends InstanceBase {
 		}
 	}
 
+	processResponse(action, response) {
+		// store JSON result data into retrieved dedicated custom variable
+		const jsonResultDataVariable = action.options.jsonResultDataVariable
+		if (jsonResultDataVariable) {
+			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
+
+			this.log('debug', `Status code ${response.statusCode}`)
+
+			this.log('debug', "Body length: " + response.body.length)
+
+			let resultData = response.body
+
+			if (!action.options.result_stringify) {
+				try {
+					resultData = JSON.parse(resultData)
+				} catch (e) {
+					//error stringifying
+					this.log('error', `HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`)
+				}
+			}
+
+			this.setCustomVariableValue(jsonResultDataVariable, resultData)
+		}
+
+	}
+
 	initActions() {
 		const urlLabel = this.config.prefix ? 'URI' : 'URL'
 
@@ -133,23 +159,7 @@ class GenericHttpInstance extends InstanceBase {
 					try {
 						const response = await got.post(url, options)
 
-						// store json result data into retrieved dedicated custom variable
-						const jsonResultDataVariable = action.options.jsonResultDataVariable
-						if (jsonResultDataVariable) {
-							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
-
-							let resultData = response.body
-
-							if (!action.options.result_stringify) {
-								try {
-									resultData = JSON.parse(resultData)
-								} catch (error) {
-									//error stringifying
-								}
-							}
-
-							this.setCustomVariableValue(jsonResultDataVariable, resultData)
-						}
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -171,23 +181,7 @@ class GenericHttpInstance extends InstanceBase {
 					try {
 						const response = await got.get(url, options)
 
-						// store json result data into retrieved dedicated custom variable
-						const jsonResultDataVariable = action.options.jsonResultDataVariable
-						if (jsonResultDataVariable) {
-							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
-
-							let resultData = response.body
-
-							if (!action.options.result_stringify) {
-								try {
-									resultData = JSON.parse(resultData)
-								} catch (error) {
-									//error stringifying
-								}
-							}
-
-							this.setCustomVariableValue(jsonResultDataVariable, resultData)
-						}
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
