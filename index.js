@@ -120,10 +120,6 @@ class GenericHttpInstance extends InstanceBase {
 		if (jsonResultDataVariable) {
 			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
 
-			this.log('debug', `Status code ${response.statusCode}`)
-
-			this.log('debug', "Body length: " + response.body.length)
-
 			let resultData = response.body
 
 			if (!action.options.result_stringify) {
