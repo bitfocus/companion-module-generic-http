@@ -114,6 +114,28 @@ class GenericHttpInstance extends InstanceBase {
 		}
 	}
 
+	processResponse(action, response) {
+		// store JSON result data into retrieved dedicated custom variable
+		const jsonResultDataVariable = action.options.jsonResultDataVariable
+		if (jsonResultDataVariable) {
+			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
+
+			let resultData = response.body
+
+			if (!action.options.result_stringify) {
+				try {
+					resultData = JSON.parse(resultData)
+				} catch (e) {
+					//error stringifying
+					this.log('error', `HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`)
+				}
+			}
+
+			this.setCustomVariableValue(jsonResultDataVariable, resultData)
+		}
+
+	}
+
 	initActions() {
 		const urlLabel = this.config.prefix ? 'URI' : 'URL'
 
@@ -124,17 +146,8 @@ class GenericHttpInstance extends InstanceBase {
 					  FIELDS.Body,
 					  FIELDS.Header,
 					  FIELDS.ContentType,
-					 {
-						type: 'custom-variable',
-						label: 'JSON Response Data Variable',
-						id: 'jsonResultDataVariable',
-					},
-					{
-						type: 'checkbox',
-						label: 'JSON Stringify Result',
-						id: 'result_stringify',
-						default: true,
-					}
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -142,24 +155,8 @@ class GenericHttpInstance extends InstanceBase {
 					try {
 						const response = await got.post(url, options)
 
-						// store json result data into retrieved dedicated custom variable
-						const jsonResultDataVariable = action.options.jsonResultDataVariable
-						if (jsonResultDataVariable) {
-							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
+						this.processResponse(action, response)
 
-							let resultData = response.body
-
-							if (!action.options.result_stringify) {
-								try {
-									resultData = JSON.parse(resultData)
-								} catch (error) {
-									//error stringifying
-								}
-							}
-
-							this.setCustomVariableValue(jsonResultDataVariable, resultData)
-						}
-						
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP POST Request failed (${e.message})`)
@@ -169,20 +166,10 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			get: {
 				name: 'GET',
-				options: [
-					FIELDS.Url(urlLabel),
-					FIELDS.Header,
-					{
-						type: 'custom-variable',
-						label: 'JSON Response Data Variable',
-						id: 'jsonResultDataVariable',
-					},
-					{
-						type: 'checkbox',
-						label: 'JSON Stringify Result',
-						id: 'result_stringify',
-						default: true,
-					},
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Header,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, false)
@@ -190,23 +177,7 @@ class GenericHttpInstance extends InstanceBase {
 					try {
 						const response = await got.get(url, options)
 
-						// store json result data into retrieved dedicated custom variable
-						const jsonResultDataVariable = action.options.jsonResultDataVariable
-						if (jsonResultDataVariable) {
-							this.log('debug', `Writing result to ${jsonResultDataVariable}`)
-
-							let resultData = response.body
-
-							if (!action.options.result_stringify) {
-								try {
-									resultData = JSON.parse(resultData)
-								} catch (error) {
-									//error stringifying
-								}
-							}
-
-							this.setCustomVariableValue(jsonResultDataVariable, resultData)
-						}
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -217,12 +188,20 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			put: {
 				name: 'PUT',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.put(url, options)
+						const response = await got.put(url, options)
+
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -233,12 +212,20 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			patch: {
 				name: 'PATCH',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.ContentType],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.patch(url, options)
+						const response = await got.patch(url, options)
+
+						this.processResponse(action, response)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
@@ -249,12 +236,18 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			delete: {
 				name: 'DELETE',
-				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header],
+				options: [FIELDS.Url(urlLabel),
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+				],
+
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						await got.delete(url, options)
+						const response = await got.delete(url, options)
 
 						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {

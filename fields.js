@@ -44,4 +44,19 @@ export const FIELDS = {
 		default: 0,
 		min: 0,
 	},
+
+	JsonResponseVariable: {
+		type: 'custom-variable',
+		label: 'JSON Response Data Variable',
+		id: 'jsonResultDataVariable',
+		default: '',
+	},
+
+	JsonStringify: {
+		type: 'checkbox',
+		label: 'JSON Stringify Result',
+		id: 'result_stringify',
+		default: true,
+	},
+
 }
