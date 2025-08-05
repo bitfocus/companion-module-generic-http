@@ -13,9 +13,9 @@
 	"license": "MIT",
 	"dependencies": {
 		"@companion-module/base": "~1.11.3",
+		"@julusian/image-rs": "^2.0.0",
 		"got": "^14.4.7",
-		"hpagent": "^1.2.0",
-		"jimp": "^0.22.12"
+		"hpagent": "^1.2.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.3.0"

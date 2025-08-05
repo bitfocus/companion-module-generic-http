@@ -4,10 +4,7 @@ import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
-import JimpRaw from 'jimp'
-
-// Webpack makes a mess..
-const Jimp = JimpRaw.default || JimpRaw
+import { ImageTransformer } from '@julusian/image-rs'
 
 class GenericHttpInstance extends InstanceBase {
 	configUpdated(config) {
@@ -297,10 +294,9 @@ class GenericHttpInstance extends InstanceBase {
 						const res = await got.get(url, options)
 
 						// Scale image to a sensible size
-						const img = await Jimp.read(res.rawBody)
-						const png64 = await img
-							.scaleToFit(feedback.image?.width ?? 72, feedback.image?.height ?? 72)
-							.getBase64Async('image/png')
+						const png64 = await ImageTransformer.fromEncodedImage(res.rawBody)
+							.scale(feedback.image?.width ?? 72, feedback.image?.height ?? 72, 'Fit')
+							.toDataUrl('png')
 
 						return {
 							png64,
