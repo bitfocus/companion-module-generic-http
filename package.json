@@ -13,7 +13,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"@companion-module/base": "~1.11.3",
-		"@julusian/image-rs": "^2.0.0",
+		"@julusian/image-rs": "^2.0.1",
 		"got": "^14.4.7",
 		"hpagent": "^1.2.0"
 	},

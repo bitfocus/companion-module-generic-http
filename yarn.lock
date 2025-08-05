@@ -150,10 +150,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@julusian/image-rs@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@julusian/image-rs@npm:2.0.0"
-  checksum: 10c0/f65ef74b28a859c19964df75bdbb3b23c20dd0a11d7924d2b389132f471155be29d29006486c11e26ce48b4700608b7a8331a8c8882ebd5989856d16a8ad11f1
+"@julusian/image-rs@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@julusian/image-rs@npm:2.0.1"
+  checksum: 10c0/82fc75364f999c0772a08b5b03983462181d0ca3c5939e68b44b53b71c2be0ce80fc3da4e062a7a6c649315a03816eb720f01091c3e6629621f771494d3100d9
   languageName: node
   linkType: hard
 
@@ -893,7 +893,7 @@ __metadata:
   dependencies:
     "@companion-module/base": "npm:~1.11.3"
     "@companion-module/tools": "npm:^2.3.0"
-    "@julusian/image-rs": "npm:^2.0.0"
+    "@julusian/image-rs": "npm:^2.0.1"
     got: "npm:^14.4.7"
     hpagent: "npm:^1.2.0"
   languageName: unknown
