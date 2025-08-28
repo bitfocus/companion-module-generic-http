@@ -48,7 +48,7 @@ class GenericHttpInstance extends InstanceBase {
 		if (includeBody && action.options.body !== undefined && action.options.body !== null) {
 			// Handle the body value - it could be a string, boolean, number, etc.
 			let bodyValue = action.options.body
-			
+
 			// If it's a string, parse variables and check if it's empty
 			if (typeof bodyValue === 'string') {
 				bodyValue = await context.parseVariablesInString(bodyValue || '')
@@ -65,7 +65,7 @@ class GenericHttpInstance extends InstanceBase {
 			}
 
 			if (bodyValue !== undefined && bodyValue !== null) {
-				
+
 				if (action.options.contenttype === 'application/json') {
 					// For JSON content type, handle different input types
 					if (typeof bodyValue === 'string') {
@@ -92,7 +92,7 @@ class GenericHttpInstance extends InstanceBase {
 		if (action.options.header !== undefined && action.options.header !== null) {
 			// Handle the header value - it could be a string, boolean, number, etc.
 			let headerValue = action.options.header
-			
+
 			// If it's a string, parse variables and check if it's empty
 			if (typeof headerValue === 'string') {
 				headerValue = await context.parseVariablesInString(headerValue || '')
@@ -133,6 +133,7 @@ class GenericHttpInstance extends InstanceBase {
 		}
 
 		if (includeBody) {
+
 			if (typeof body === 'string') {
 				body = body.replace(/\\n/g, '\n')
 				options.body = body
@@ -145,7 +146,7 @@ class GenericHttpInstance extends InstanceBase {
 			}
 		}
 
-		if(this.config.proxyAddress && this.config.proxyAddress.length > 0) {
+		if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
 			options.agent = {
 				http: new HttpProxyAgent({
 					proxy: this.config.proxyAddress
@@ -191,21 +192,17 @@ class GenericHttpInstance extends InstanceBase {
 			post: {
 				name: 'POST',
 				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
+				FIELDS.Body,
+				FIELDS.Header,
+				FIELDS.ContentType,
+				FIELDS.JsonResponseVariable,
+				FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
 
 					try {
-						const response = await got.post(url, {...options, hooks: {beforeRequest: [
-							(options) => {
-								console.log('=BEFORE REQUEST=', options)
-							}
-						]}})
+						const response = await got.post(url, options)
 
 						this.processResponse(action, response)
 
@@ -219,9 +216,9 @@ class GenericHttpInstance extends InstanceBase {
 			get: {
 				name: 'GET',
 				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Header,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
+				FIELDS.Header,
+				FIELDS.JsonResponseVariable,
+				FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, false)
@@ -241,11 +238,11 @@ class GenericHttpInstance extends InstanceBase {
 			put: {
 				name: 'PUT',
 				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
+				FIELDS.Body,
+				FIELDS.Header,
+				FIELDS.ContentType,
+				FIELDS.JsonResponseVariable,
+				FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -265,11 +262,11 @@ class GenericHttpInstance extends InstanceBase {
 			patch: {
 				name: 'PATCH',
 				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
+				FIELDS.Body,
+				FIELDS.Header,
+				FIELDS.ContentType,
+				FIELDS.JsonResponseVariable,
+				FIELDS.JsonStringify,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -289,10 +286,10 @@ class GenericHttpInstance extends InstanceBase {
 			delete: {
 				name: 'DELETE',
 				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
+				FIELDS.Body,
+				FIELDS.Header,
+				FIELDS.JsonResponseVariable,
+				FIELDS.JsonStringify,
 				],
 
 				callback: async (action, context) => {
