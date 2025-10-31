@@ -73,4 +73,11 @@ export const FIELDS = {
 		default: true,
 	},
 
+	StatusCodeVariable: {
+		type: 'custom-variable',
+		label: 'Response Status Code Variable',
+		id: 'statusCodeVariable',
+		default: '',
+	},
+
 }

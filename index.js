@@ -157,6 +157,8 @@ class GenericHttpInstance extends InstanceBase {
 			}
 		}
 
+		options.throwHttpErrors = false
+
 		return {
 			url,
 			options,
@@ -164,6 +166,23 @@ class GenericHttpInstance extends InstanceBase {
 	}
 
 	processResponse(action, response) {
+		if (response.ok) {
+			this.updateStatus(InstanceStatus.Ok)
+		} else {
+			this.updateStatus(InstanceStatus.UnknownError, `${response.statusCode}: ${response.statusMessage}`)
+			this.log('error', `HTTP ${action.actionId.toUpperCase()} Request failed (Response code ${response.statusCode} (${response.statusMessage}))`)
+		}
+
+		// store status code into retrieved dedicated custom variable
+		const statusCodeVariable = action.options.statusCodeVariable
+		if (statusCodeVariable) {
+			this.log('debug', `Status code ${response.statusCode}`)
+
+			this.log('debug', `Writing status code to ${statusCodeVariable}`)
+
+			this.setCustomVariableValue(statusCodeVariable, response.statusCode)
+		}
+
 		// store JSON result data into retrieved dedicated custom variable
 		const jsonResultDataVariable = action.options.jsonResultDataVariable
 		if (jsonResultDataVariable) {
@@ -192,11 +211,12 @@ class GenericHttpInstance extends InstanceBase {
 			post: {
 				name: 'POST',
 				options: [FIELDS.Url(urlLabel),
-				FIELDS.Body,
-				FIELDS.Header,
-				FIELDS.ContentType,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+					  FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -205,8 +225,6 @@ class GenericHttpInstance extends InstanceBase {
 						const response = await got.post(url, options)
 
 						this.processResponse(action, response)
-
-						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP POST Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -216,9 +234,10 @@ class GenericHttpInstance extends InstanceBase {
 			get: {
 				name: 'GET',
 				options: [FIELDS.Url(urlLabel),
-				FIELDS.Header,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
+					  FIELDS.Header,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+					  FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, false)
@@ -227,8 +246,6 @@ class GenericHttpInstance extends InstanceBase {
 						const response = await got.get(url, options)
 
 						this.processResponse(action, response)
-
-						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP GET Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -238,11 +255,12 @@ class GenericHttpInstance extends InstanceBase {
 			put: {
 				name: 'PUT',
 				options: [FIELDS.Url(urlLabel),
-				FIELDS.Body,
-				FIELDS.Header,
-				FIELDS.ContentType,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+					  FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -251,8 +269,6 @@ class GenericHttpInstance extends InstanceBase {
 						const response = await got.put(url, options)
 
 						this.processResponse(action, response)
-
-						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP PUT Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -262,11 +278,12 @@ class GenericHttpInstance extends InstanceBase {
 			patch: {
 				name: 'PATCH',
 				options: [FIELDS.Url(urlLabel),
-				FIELDS.Body,
-				FIELDS.Header,
-				FIELDS.ContentType,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
+					  FIELDS.Body,
+					  FIELDS.Header,
+					  FIELDS.ContentType,
+					  FIELDS.JsonResponseVariable,
+					  FIELDS.JsonStringify,
+					  FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -275,8 +292,6 @@ class GenericHttpInstance extends InstanceBase {
 						const response = await got.patch(url, options)
 
 						this.processResponse(action, response)
-
-						this.updateStatus(InstanceStatus.Ok)
 					} catch (e) {
 						this.log('error', `HTTP PATCH Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
