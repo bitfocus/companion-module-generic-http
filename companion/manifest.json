@@ -1,8 +1,8 @@
 {
-	"id": "generic-http",
-	"name": "generic-http",
-	"shortname": "http",
-	"description": "generic-http",
+	"id": "neol-epower4",
+	"name": "neol-epower4",
+	"shortname": "neol-ep4",
+	"description": "http control Neol EPoweerSwitch 4 R3",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-generic-http.git",
