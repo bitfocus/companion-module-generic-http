@@ -6,10 +6,13 @@
   "version": "0.0.1",
   "license": "MIT",
   "author": "brimbolex",
-  "repository": "https://github.com/brimbolex/companion-module-neol-epowerswitch4",
-  "bugs": "https://github.com/brimbolex/companion-module-neol-epowerswitch4/issues",
+  "maintainers": [
+    {
+      "name": "brimbolex",
+      "email": "dev@example.com"
+    }
+  ],
   "products": ["ePowerSwitch 4"],
   "manufacturer": "NeoL",
-  "companionMinVersion": "4.2.0",
-  "legacyIds": []
+  "companionMinVersion": "4.2.0"
 }
