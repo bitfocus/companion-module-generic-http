@@ -1,43 +1,15 @@
 {
-	"id": "neol-epower4",
-	"name": "neol-epower4",
-	"shortname": "neol-ep4",
-	"description": "http control Neol EPoweerSwitch 4 R3",
-	"version": "0.0.0",
-	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-generic-http.git",
-	"bugs": "https://github.com/bitfocus/companion-module-generic-http/issues",
-	"maintainers": [
-		{
-			"name": "William Viker",
-			"email": "william@bitfocus.io"
-		},
-		{
-			"name": "Keith Rocheck",
-			"email": "keith.rocheck@gmail.com"
-		},
-		{
-			"name": "Jeffrey Davidsz",
-			"email": "jeffrey.davidsz@vicreo.eu"
-		},
-		{
-			"name": "Joseph Adams",
-			"email": "josephdadams@gmail.com"
-		}
-	],
-	"legacyIds": [],
-	"runtime": {
-		"type": "node22",
-		"api": "nodejs-ipc",
-		"apiVersion": "0.0.0",
-		"entrypoint": "../index.js"
-	},
-	"manufacturer": "Generic",
-	"products": [
-		"HTTP Requests"
-	],
-	"keywords": [
-		"Protocol",
-		"Generic"
-	]
+  "id": "neol-epower4",
+  "name": "NeoL ePowerSwitch 4",
+  "shortname": "ePower4",
+  "description": "HTTP control for NeoL ePowerSwitch 4 R3",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "brimbolex",
+  "repository": "https://github.com/brimbolex/companion-module-neol-epowerswitch4",
+  "bugs": "https://github.com/brimbolex/companion-module-neol-epowerswitch4/issues",
+  "products": ["ePowerSwitch 4"],
+  "manufacturer": "NeoL",
+  "companionMinVersion": "4.2.0",
+  "legacyIds": []
 }
