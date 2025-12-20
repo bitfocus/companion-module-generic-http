@@ -1,24 +1,21 @@
 {
-	"name": "generic-http",
-	"version": "2.6.0",
-	"main": "index.js",
-	"type": "module",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/bitfocus/companion-module-generic-http.git"
-	},
-	"license": "MIT",
-	"dependencies": {
-		"@companion-module/base": "~1.11.3",
-		"@julusian/image-rs": "^2.0.1",
-		"got": "^14.4.7",
-		"hpagent": "^1.2.0"
-	},
-	"devDependencies": {
-		"@companion-module/tools": "^2.3.0"
-	},
-	"packageManager": "yarn@4.9.1"
+  "name": "companion-module-neol-epowerswitch4",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brimbolex/companion-module-neol-epowerswitch4.git"
+  },
+  "dependencies": {
+    "@companion-module/base": "~1.11.3",
+    "@julusian/image-rs": "^2.0.1",
+    "got": "^14.4.7",
+    "hpagent": "^1.2.0"
+  },
+  "devDependencies": {
+    "@companion-module/tools": "^2.3.0"
+  },
+  "packageManager": "yarn@4.12.0"
 }
