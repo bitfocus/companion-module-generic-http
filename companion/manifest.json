@@ -12,6 +12,13 @@
       "email": "dev@example.com"
     }
   ],
+  	"legacyIds": [],
+	"runtime": {
+		"type": "node22",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../index.js"
+	},
   "products": ["ePowerSwitch 4"],
   "manufacturer": "NeoL",
   "companionMinVersion": "4.2.0"
