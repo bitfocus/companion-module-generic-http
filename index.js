@@ -3,24 +3,44 @@ import got from 'got'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
-import { FIELDS } from './fields.js'
-import { ImageTransformer } from '@julusian/image-rs'
 
 class GenericHttpInstance extends InstanceBase {
 	configUpdated(config) {
-		this.config = config
-
-		this.initActions()
-		this.initFeedbacks()
-	}
-
-	init(config) {
-		this.config = config
+		// Ensure we always have defaults so the instance can be 'running' immediately
+		this.config = {
+			prefix: '',
+			rejectUnauthorized: true,
+			proxyAddress: '',
+			hiddenPath: '/hidden.htm',
+			statusPollInterval: 1000,
+			...(config || {}),
+		}
 
 		this.updateStatus(InstanceStatus.Ok)
 
 		this.initActions()
 		this.initFeedbacks()
+		this.initVariables()
+		this.startPolling()
+	}
+
+	init(config) {
+		// Ensure we always have defaults so the instance can 'run' even before user config is set
+		this.config = {
+			prefix: '',
+			rejectUnauthorized: true,
+			proxyAddress: '',
+			hiddenPath: '/hidden.htm',
+			statusPollInterval: 1000,
+			...(config || {}),
+		}
+
+		this.updateStatus(InstanceStatus.Ok)
+
+		this.initActions()
+		this.initFeedbacks()
+		this.initVariables()
+		this.startPolling()
 	}
 
 	// Return config fields for web config
@@ -30,349 +50,253 @@ class GenericHttpInstance extends InstanceBase {
 
 	// When module gets deleted
 	async destroy() {
-		// Stop any running feedback timers
-		for (const timer of Object.values(this.feedbackTimers)) {
-			clearInterval(timer)
-		}
+		this.stopPolling()
 	}
 
-	async prepareQuery(context, action, includeBody) {
-		let url = await context.parseVariablesInString(action.options.url || '')
-		if (url.substring(0, 4) !== 'http') {
-			if (this.config.prefix && this.config.prefix.length > 0) {
-				url = `${this.config.prefix}${url.trim()}`
-			}
-		}
-
-		let body = {}
-		if (includeBody && action.options.body !== undefined && action.options.body !== null) {
-			// Handle the body value - it could be a string, boolean, number, etc.
-			let bodyValue = action.options.body
-
-			// If it's a string, parse variables and check if it's empty
-			if (typeof bodyValue === 'string') {
-				bodyValue = await context.parseVariablesInString(bodyValue || '')
-				if (bodyValue.trim() === '') {
-					bodyValue = undefined
-				}
-			} else {
-				try {
-					bodyValue = await context.parseVariablesInString(bodyValue)
-				} catch (e) {
-					// If parsing fails, use the original value
-					bodyValue = action.options.body
-				}
-			}
-
-			if (bodyValue !== undefined && bodyValue !== null) {
-
-				if (action.options.contenttype === 'application/json') {
-					// For JSON content type, handle different input types
-					if (typeof bodyValue === 'string') {
-						// If it's a string, try to parse it as JSON
-						try {
-							body = JSON.parse(bodyValue)
-						} catch (e) {
-							this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
-							this.updateStatus(InstanceStatus.UnknownError, e.message)
-							return
-						}
-					} else {
-						// If it's already a non-string value (boolean, number, object, array), use it directly
-						body = bodyValue
-					}
-				} else {
-					// For non-JSON content types, convert to string
-					body = String(bodyValue)
-				}
-			}
-		}
-
-		let headers = {}
-		if (action.options.header !== undefined && action.options.header !== null) {
-			// Handle the header value - it could be a string, boolean, number, etc.
-			let headerValue = action.options.header
-
-			// If it's a string, parse variables and check if it's empty
-			if (typeof headerValue === 'string') {
-				headerValue = await context.parseVariablesInString(headerValue || '')
-				if (headerValue.trim() === '') {
-					headerValue = undefined
-				}
-			} else {
-				// For non-string values, parse variables if possible
-				try {
-					headerValue = await context.parseVariablesInString(headerValue)
-				} catch (e) {
-					// If parsing fails, use the original value
-					headerValue = action.options.header
-				}
-			}
-
-			if (headerValue !== undefined && headerValue !== null) {
-				try {
-					headers = JSON.parse(headerValue)
-				} catch (e) {
-					this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`)
-					this.updateStatus(InstanceStatus.UnknownError, e.message)
-					return
-				}
-			}
-		}
-
-		if (includeBody && action.options.contenttype) {
-			headers['Content-Type'] = action.options.contenttype
-		}
-
-		const options = {
-			https: {
-				rejectUnauthorized: this.config.rejectUnauthorized,
-			},
-
-			headers,
-		}
-
-		if (includeBody) {
-
-			if (typeof body === 'string') {
-				body = body.replace(/\\n/g, '\n')
-				options.body = body
-			} else if (body !== undefined && body !== null) {
-				if (action.options.contenttype === 'application/json') {
-					options.json = body
-				} else {
-					options.body = String(body)
-				}
-			}
-		}
-
-		if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
-			options.agent = {
-				http: new HttpProxyAgent({
-					proxy: this.config.proxyAddress
-				}),
-				https: new HttpsProxyAgent({
-					proxy: this.config.proxyAddress
-				})
-			}
-		}
-
-		options.throwHttpErrors = false
-
-		return {
-			url,
-			options,
-		}
-	}
-
-	processResponse(action, response) {
-		if (response.ok) {
-			this.updateStatus(InstanceStatus.Ok)
-		} else {
-			this.updateStatus(InstanceStatus.UnknownError, `${response.statusCode}: ${response.statusMessage}`)
-			this.log('error', `HTTP ${action.actionId.toUpperCase()} Request failed (Response code ${response.statusCode} (${response.statusMessage}))`)
-		}
-
-		// store status code into retrieved dedicated custom variable
-		const statusCodeVariable = action.options.statusCodeVariable
-		if (statusCodeVariable) {
-			this.log('debug', `Status code ${response.statusCode}`)
-
-			this.log('debug', `Writing status code to ${statusCodeVariable}`)
-
-			this.setCustomVariableValue(statusCodeVariable, response.statusCode)
-		}
-
-		// store JSON result data into retrieved dedicated custom variable
-		const jsonResultDataVariable = action.options.jsonResultDataVariable
-		if (jsonResultDataVariable) {
-			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
-
-			let resultData = response.body
-
-			if (!action.options.result_stringify) {
-				try {
-					resultData = JSON.parse(resultData)
-				} catch (e) {
-					//error stringifying
-					this.log('error', `HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`)
-				}
-			}
-
-			this.setCustomVariableValue(jsonResultDataVariable, resultData)
-		}
-
-	}
 
 	initActions() {
-		const urlLabel = this.config.prefix ? 'URI' : 'URL'
-
 		this.setActionDefinitions({
-			post: {
-				name: 'POST',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
-				],
-				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
-
-					try {
-						const response = await got.post(url, options)
-
-						this.processResponse(action, response)
-					} catch (e) {
-						this.log('error', `HTTP POST Request failed (${e.message})`)
-						this.updateStatus(InstanceStatus.UnknownError, e.code)
-					}
+			test_log: {
+				name: 'TEST: Write log entry',
+				options: [],
+				callback: async () => {
+					this.log('info', 'TEST ACTION TRIGGERED')
 				},
 			},
-			get: {
-				name: 'GET',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Header,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
+			toggle_outlet_hidden: {
+				name: 'ePowerSwitch: Toggle outlet (via hidden.htm)',
+				description: 'Sends /hidden.htm?M0:O{n}=ON/OFF depending on current state (polled from hidden.htm)',
+				options: [
+					{
+						type: 'dropdown',
+						id: 'outlet',
+						label: 'Outlet',
+						width: 6,
+						default: 1,
+						choices: [
+							{ id: 1, label: 'Outlet 1' },
+							{ id: 2, label: 'Outlet 2' },
+							{ id: 3, label: 'Outlet 3' },
+							{ id: 4, label: 'Outlet 4' },
+						],
+					},
+					{
+						type: 'dropdown',
+						id: 'mode',
+						label: 'Mode',
+						width: 6,
+						default: 'toggle',
+						choices: [
+							{ id: 'toggle', label: 'Toggle (auto)' },
+							{ id: 'on', label: 'Force ON' },
+							{ id: 'off', label: 'Force OFF' },
+						],
+					},
 				],
-				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, false)
-
+				callback: async (action) => {
 					try {
-						const response = await got.get(url, options)
+						const outlet = Number(action.options.outlet ?? 1)
+						const mode = String(action.options.mode ?? 'toggle')
 
-						this.processResponse(action, response)
-					} catch (e) {
-						this.log('error', `HTTP GET Request failed (${e.message})`)
-						this.updateStatus(InstanceStatus.UnknownError, e.code)
-					}
-				},
-			},
-			put: {
-				name: 'PUT',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
-				],
-				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+						let cmd
+						if (mode === 'on') cmd = 'ON'
+						else if (mode === 'off') cmd = 'OFF'
+						else cmd = this.outletStates[outlet] ? 'OFF' : 'ON'
 
-					try {
-						const response = await got.put(url, options)
+						let base = (this.config.prefix || '').trim()
+						const path = (this.config.hiddenPath || '/hidden.htm').trim()
+						if (!base) {
+							this.updateStatus(InstanceStatus.BadConfig, 'Base URL (prefix) is empty')
+							return
+						}
+						if (!/^https?:\/\//i.test(base)) base = `http://${base}`
 
-						this.processResponse(action, response)
-					} catch (e) {
-						this.log('error', `HTTP PUT Request failed (${e.message})`)
-						this.updateStatus(InstanceStatus.UnknownError, e.code)
-					}
-				},
-			},
-			patch: {
-				name: 'PATCH',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
-				],
-				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+						let url = base
+						if (path) {
+							if (url.endsWith('/') && path.startsWith('/')) url = url.slice(0, -1)
+							url = `${url}${path}`
+						}
 
-					try {
-						const response = await got.patch(url, options)
+						url = `${url}?M0:O${outlet}=${cmd}`
 
-						this.processResponse(action, response)
-					} catch (e) {
-						this.log('error', `HTTP PATCH Request failed (${e.message})`)
-						this.updateStatus(InstanceStatus.UnknownError, e.code)
-					}
-				},
-			},
-			delete: {
-				name: 'DELETE',
-				options: [FIELDS.Url(urlLabel),
-				FIELDS.Body,
-				FIELDS.Header,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
-				],
+						const options = {
+							https: { rejectUnauthorized: this.config.rejectUnauthorized },
+							throwHttpErrors: false,
+						}
+						if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
+							options.agent = {
+								http: new HttpProxyAgent({ proxy: this.config.proxyAddress }),
+								https: new HttpsProxyAgent({ proxy: this.config.proxyAddress }),
+							}
+						}
 
-				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+						this.log('debug', `Sending hidden toggle: ${url}`)
+						const res = await got.get(url, options)
 
-					try {
-						const response = await got.delete(url, options)
+						if (res.statusCode < 200 || res.statusCode >= 300) {
+							this.updateStatus(InstanceStatus.UnknownError, `HTTP ${res.statusCode}`)
+							this.log('error', `Hidden toggle failed: HTTP ${res.statusCode}`)
+							return
+						}
 
 						this.updateStatus(InstanceStatus.Ok)
+						// Let polling update the state; optionally trigger an early refresh
+						this.pollStatus().catch(() => {})
 					} catch (e) {
-						this.log('error', `HTTP DELETE Request failed (${e.message})`)
-						this.updateStatus(InstanceStatus.UnknownError, e.code)
+						this.updateStatus(InstanceStatus.UnknownError, e?.message ?? String(e))
+						this.log('error', `Hidden toggle error: ${e?.message ?? e}`)
 					}
 				},
 			},
 		})
 	}
 
-	feedbackTimers = {}
+
+	pollTimer = null
+	outletStates = { 1: false, 2: false, 3: false, 4: false }
+
+	initVariables() {
+		this.setVariableDefinitions([
+			{ variableId: 'outlet_1', name: 'Outlet 1 (On/Off)' },
+			{ variableId: 'outlet_1_cmd', name: 'Outlet 1 toggle cmd (ON/OFF)' },
+			{ variableId: 'outlet_2', name: 'Outlet 2 (On/Off)' },
+			{ variableId: 'outlet_2_cmd', name: 'Outlet 2 toggle cmd (ON/OFF)' },
+			{ variableId: 'outlet_3', name: 'Outlet 3 (On/Off)' },
+			{ variableId: 'outlet_3_cmd', name: 'Outlet 3 toggle cmd (ON/OFF)' },
+			{ variableId: 'outlet_4', name: 'Outlet 4 (On/Off)' },
+			{ variableId: 'outlet_4_cmd', name: 'Outlet 4 toggle cmd (ON/OFF)' },
+		])
+	}
+
+	stopPolling() {
+		if (this.pollTimer) {
+			clearInterval(this.pollTimer)
+			this.pollTimer = null
+		}
+	}
+
+	startPolling() {
+		this.stopPolling()
+
+		const interval = Number(this.config.statusPollInterval ?? 1000)
+		if (!interval || interval < 250) return
+
+		// poll once immediately
+		this.pollStatus().catch(() => {})
+
+		this.pollTimer = setInterval(() => {
+			this.pollStatus().catch(() => {})
+		}, interval)
+	}
+
+	async pollStatus() {
+		try {
+			let base = (this.config.prefix || '').trim()
+			const path = (this.config.hiddenPath || '/hidden.htm').trim()
+
+			if (!base) {
+				this.updateStatus(InstanceStatus.BadConfig, 'Base URL (prefix) is empty')
+				return
+			}
+
+			if (!/^https?:\/\//i.test(base)) base = `http://${base}`
+
+			let url = base
+			if (path) {
+				if (url.endsWith('/') && path.startsWith('/')) url = url.slice(0, -1)
+				url = `${url}${path}`
+			}
+
+			const options = {
+				https: {
+					rejectUnauthorized: this.config.rejectUnauthorized,
+				},
+				throwHttpErrors: false,
+			}
+
+			if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
+				options.agent = {
+					http: new HttpProxyAgent({ proxy: this.config.proxyAddress }),
+					https: new HttpsProxyAgent({ proxy: this.config.proxyAddress }),
+				}
+			}
+
+			this.log('debug', `Polling ePowerSwitch hidden page: ${url}`)
+
+			const res = await got.get(url, options)
+			const body = res.body ?? ''
+
+			if (res.statusCode < 200 || res.statusCode >= 300) {
+				this.updateStatus(InstanceStatus.UnknownError, `HTTP ${res.statusCode}`)
+				this.log('error', `Polling failed: HTTP ${res.statusCode}`)
+				return
+			}
+
+			const re = /M0:O([1-4])=(On|Off)/g
+			let m
+			const next = { 1: false, 2: false, 3: false, 4: false }
+			let found = 0
+			while ((m = re.exec(body)) !== null) {
+				const o = Number(m[1])
+				next[o] = m[2] === 'On'
+				found++
+			}
+
+			if (found === 0) {
+				this.updateStatus(InstanceStatus.UnknownError, 'No outlet states found in hidden.htm')
+				this.log('error', 'Polling succeeded but no M0:O*=On/Off lines were found')
+				return
+			}
+
+			this.outletStates = next
+
+			this.setVariableValues({
+				outlet_1: next[1] ? 'On' : 'Off',
+				outlet_1_cmd: next[1] ? 'OFF' : 'ON',
+				outlet_2: next[2] ? 'On' : 'Off',
+				outlet_2_cmd: next[2] ? 'OFF' : 'ON',
+				outlet_3: next[3] ? 'On' : 'Off',
+				outlet_3_cmd: next[3] ? 'OFF' : 'ON',
+				outlet_4: next[4] ? 'On' : 'Off',
+				outlet_4_cmd: next[4] ? 'OFF' : 'ON',
+			})
+
+			this.updateStatus(InstanceStatus.Ok)
+			this.checkFeedbacks()
+		} catch (e) {
+			this.updateStatus(InstanceStatus.UnknownError, e?.message ?? String(e))
+			this.log('error', `Polling error: ${e?.message ?? e}`)
+		}
+	}
 
 	initFeedbacks() {
-		const urlLabel = this.config.prefix ? 'URI' : 'URL'
-
 		this.setFeedbackDefinitions({
-			imageFromUrl: {
-				type: 'advanced',
-				name: 'Image from URL',
-				options: [FIELDS.Url(urlLabel), FIELDS.Header, FIELDS.PollInterval],
-				subscribe: (feedback) => {
-					// Ensure existing timer is cleared
-					if (this.feedbackTimers[feedback.id]) {
-						clearInterval(this.feedbackTimers[feedback.id])
-						delete this.feedbackTimers[feedback.id]
-					}
-
-					// Start new timer if needed
-					if (feedback.options.interval) {
-						this.feedbackTimers[feedback.id] = setInterval(() => {
-							this.checkFeedbacksById(feedback.id)
-						}, feedback.options.interval)
-					}
+			outletStateFromHidden: {
+				type: 'boolean',
+				name: 'ePowerSwitch: Outlet ON',
+				description: 'Uses shared polling of /hidden.htm and checks whether a selected outlet is ON',
+				options: [
+					{
+						type: 'dropdown',
+						id: 'outlet',
+						label: 'Outlet',
+						width: 6,
+						default: 1,
+						choices: [
+							{ id: 1, label: 'Outlet 1' },
+							{ id: 2, label: 'Outlet 2' },
+							{ id: 3, label: 'Outlet 3' },
+							{ id: 4, label: 'Outlet 4' },
+						],
+					},
+				],
+				defaultStyle: {
+					bgcolor: 0x00ff00,
+					color: 0x000000,
 				},
-				unsubscribe: (feedback) => {
-					// Ensure timer is cleared
-					if (this.feedbackTimers[feedback.id]) {
-						clearInterval(this.feedbackTimers[feedback.id])
-						delete this.feedbackTimers[feedback.id]
-					}
-				},
-				callback: async (feedback, context) => {
-					try {
-						const { url, options } = await this.prepareQuery(context, feedback, false)
-
-						const res = await got.get(url, options)
-
-						// Scale image to a sensible size
-						const png64 = await ImageTransformer.fromEncodedImage(res.rawBody)
-							.scale(feedback.image?.width ?? 72, feedback.image?.height ?? 72, 'Fit')
-							.toDataUrl('png')
-
-						return {
-							png64,
-						}
-					} catch (e) {
-						// Image failed to load so log it and output nothing
-						this.log('error', `Failed to fetch image: ${e}`)
-						return {}
-					}
+				callback: async (feedback) => {
+					const outlet = Number(feedback.options.outlet ?? 1)
+					return this.outletStates[outlet] === true
 				},
 			},
 		})
