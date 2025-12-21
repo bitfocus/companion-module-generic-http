@@ -26,7 +26,12 @@
   "manufacturer": "NeoL",
   "companionMinVersion": "4.2.0",
   "keywords": [
-    "Protocol",
-    "Generic"
+    "power",
+    "pdu",
+    "relay",
+    "outlet",
+    "http",
+    "neol",
+    "epowerswitch"
   ]
 }
