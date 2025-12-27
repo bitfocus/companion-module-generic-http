@@ -7,7 +7,7 @@ SETUP Neol Epowerswitch
 The hidden page has to be activated in the admin tables
 
 [YOURIP:port/admin/control.htm] (port is usually 2550)
-navigate to users
+navigate to Settings/Accounts
 
 
 <img src="/documents/epower accounts.png" alt="Accounts" width="300"/>
