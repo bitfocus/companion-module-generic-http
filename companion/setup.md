@@ -8,7 +8,7 @@ The hidden page has to be activated in the admin tables
 
 [YOURIP:port/admin/control.htm] (port is usually 2550)
 navigate to users and edit "hidden"
-check the activation box, but DON'T set a password.
+check the activation box, but DON'T set a username or password.
 there is no Auth routine in the plugin.
 
 Setup the Outlets witch should be controlable. 
