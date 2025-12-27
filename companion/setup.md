@@ -7,9 +7,12 @@ SETUP Neol Epowerswitch
 The hidden page has to be activated in the admin tables
 
 [YOURIP:port/admin/control.htm] (port is usually 2550)
-navigate to users and edit "hidden"
-check the activation box, but DON'T set a username or password.
+navigate to users
+
+check the activation box and edit user hidden DON'T set a username or password.
 there is no Auth routine in the plugin.
+
+./documents/epower accounts.png
 
 Setup the Outlets witch should be controlable. 
 Select them in the box below and hit the red rightgfaced arrow icon
