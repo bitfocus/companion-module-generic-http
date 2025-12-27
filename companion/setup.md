@@ -8,13 +8,15 @@ The hidden page has to be activated in the admin tables
 
 [YOURIP:port/admin/control.htm] (port is usually 2550)
 navigate to users
-
-check the activation box and edit user hidden DON'T set a username or password.
-there is no Auth routine in the plugin.
-
 <img src="/documents/epower accounts.png" alt="Accounts" width="300"/>
+check the activation box  Hidden Page
 
 
+and edit user hidden 
+<img src="/documents/epower hiddenuser.png" alt="Accounts" width="300"/>
+
+DON'T set a username or password.
+there is no Auth routine in the plugin.
 Setup the Outlets witch should be controlable. 
 Select them in the box below and hit the red rightgfaced arrow icon
 (dont wonder about the reset only explanation. it is just an option!)
