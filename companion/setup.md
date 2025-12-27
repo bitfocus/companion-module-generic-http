@@ -12,7 +12,7 @@ navigate to users
 check the activation box and edit user hidden DON'T set a username or password.
 there is no Auth routine in the plugin.
 
-<img src="./documents/epower accounts.png" alt="Accounts" width="300"/>
+<img src="/documents/epower accounts.png" alt="Accounts" width="300"/>
 
 
 Setup the Outlets witch should be controlable. 
