@@ -8,12 +8,19 @@ The hidden page has to be activated in the admin tables
 
 [YOURIP:port/admin/control.htm] (port is usually 2550)
 navigate to users
+
+
 <img src="/documents/epower accounts.png" alt="Accounts" width="300"/>
+
+
 check the activation box  Hidden Page
 
 
 and edit user hidden 
+
+
 <img src="/documents/epower hiddenuser.png" alt="Accounts" width="300"/>
+
 
 DON'T set a username or password.
 there is no Auth routine in the plugin.
