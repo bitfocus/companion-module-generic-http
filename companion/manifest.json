@@ -32,6 +32,8 @@
     "outlet",
     "http",
     "neol",
-    "epowerswitch"
+    "epowerswitch",
+	"power-switch",
+  	"remote-power"
   ]
 }
