@@ -3,7 +3,7 @@
   "name": "NeoL ePowerSwitch 4",
   "shortname": "ePower4",
   "description": "HTTP control for NeoL ePowerSwitch 4 R3",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "brimbolex",
   "repository": "https://github.com/brimbolex/companion-module-neol-epowerswitch4",
