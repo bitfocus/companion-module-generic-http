@@ -21,7 +21,8 @@ SETUP companion
 enter the destination IP in the conection 
 choose a polling interval (eg. 1000-2000 ms)
 
-create a button choose the outlet and the switching option (force ON/OFF toggle)
+create a button choose the outlet and the switching option (force ON, force OFF, toggle)
 create a feeback select the outlet and the button becomes green when switched ON
 
-it also fills a variable for each output with the state ON or OFF
+it also fills a variable $(ePower4:outlet_x) while x is the number of the outlet for each output with the state On or Off
+
