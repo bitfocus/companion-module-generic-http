@@ -1,4 +1,4 @@
-## SetUp your Neol EPowerswitch with companion
+## SetUp your Neol EPowerSwitch with companion
 
 this module uses the hidden page feature.
 
