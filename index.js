@@ -1,16 +1,13 @@
 import { InstanceBase, runEntrypoint, InstanceStatus } from '@companion-module/base'
 import got from 'got'
-import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 
-class GenericHttpInstance extends InstanceBase {
+class EPowerSwitchInstance extends InstanceBase {
 	configUpdated(config) {
 		// Ensure we always have defaults so the instance can be 'running' immediately
 		this.config = {
 			prefix: '',
-			rejectUnauthorized: true,
-			proxyAddress: '',
 			hiddenPath: '/hidden.htm',
 			statusPollInterval: 1000,
 			...(config || {}),
@@ -28,8 +25,6 @@ class GenericHttpInstance extends InstanceBase {
 		// Ensure we always have defaults so the instance can 'run' even before user config is set
 		this.config = {
 			prefix: '',
-			rejectUnauthorized: true,
-			proxyAddress: '',
 			hiddenPath: '/hidden.htm',
 			statusPollInterval: 1000,
 			...(config || {}),
@@ -56,13 +51,6 @@ class GenericHttpInstance extends InstanceBase {
 
 	initActions() {
 		this.setActionDefinitions({
-			test_log: {
-				name: 'TEST: Write log entry',
-				options: [],
-				callback: async () => {
-					this.log('info', 'TEST ACTION TRIGGERED')
-				},
-			},
 			toggle_outlet_hidden: {
 				name: 'ePowerSwitch: Toggle outlet (via hidden.htm)',
 				description: 'Sends /hidden.htm?M0:O{n}=ON/OFF depending on current state (polled from hidden.htm)',
@@ -119,19 +107,10 @@ class GenericHttpInstance extends InstanceBase {
 
 						url = `${url}?M0:O${outlet}=${cmd}`
 
-						const options = {
-							https: { rejectUnauthorized: this.config.rejectUnauthorized },
+						const res = await got.get(url, {
 							throwHttpErrors: false,
-						}
-						if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
-							options.agent = {
-								http: new HttpProxyAgent({ proxy: this.config.proxyAddress }),
-								https: new HttpsProxyAgent({ proxy: this.config.proxyAddress }),
-							}
-						}
-
-						this.log('debug', `Sending hidden toggle: ${url}`)
-						const res = await got.get(url, options)
+							timeout: { request: 5000 },
+						})
 
 						if (res.statusCode < 200 || res.statusCode >= 300) {
 							this.updateStatus(InstanceStatus.UnknownError, `HTTP ${res.statusCode}`)
@@ -207,23 +186,10 @@ class GenericHttpInstance extends InstanceBase {
 				url = `${url}${path}`
 			}
 
-			const options = {
-				https: {
-					rejectUnauthorized: this.config.rejectUnauthorized,
-				},
+			const res = await got.get(url, {
 				throwHttpErrors: false,
-			}
-
-			if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
-				options.agent = {
-					http: new HttpProxyAgent({ proxy: this.config.proxyAddress }),
-					https: new HttpsProxyAgent({ proxy: this.config.proxyAddress }),
-				}
-			}
-
-			this.log('debug', `Polling ePowerSwitch hidden page: ${url}`)
-
-			const res = await got.get(url, options)
+				timeout: { request: 5000 },
+			})
 			const body = res.body ?? ''
 
 			if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -303,4 +269,4 @@ class GenericHttpInstance extends InstanceBase {
 	}
 }
 
-runEntrypoint(GenericHttpInstance, upgradeScripts)
+runEntrypoint(EPowerSwitchInstance, upgradeScripts)
