@@ -13,12 +13,12 @@
 	"license": "MIT",
 	"dependencies": {
 		"@companion-module/base": "~1.11.3",
-		"@julusian/image-rs": "^2.0.1",
-		"got": "^14.4.7",
+		"@julusian/image-rs": "^2.1.1",
+		"got": "^14.6.6",
 		"hpagent": "^1.2.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.3.0"
+		"@companion-module/tools": "^2.5.0"
 	},
-	"packageManager": "yarn@4.9.1"
+	"packageManager": "yarn@4.12.0"
 }
