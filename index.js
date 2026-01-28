@@ -360,9 +360,13 @@ class GenericHttpInstance extends InstanceBase {
 
 						const res = await got.get(url, options)
 
+
+						// Hack: oversample the image to match companion's oversampling to ensure high quality rendering
+						const imageOversample = 4
+
 						// Scale image to a sensible size
 						const png64 = await ImageTransformer.fromEncodedImage(res.rawBody)
-							.scale(feedback.image?.width ?? 72, feedback.image?.height ?? 72, 'Fit')
+							.scale((feedback.image?.width ?? 72) * imageOversample, (feedback.image?.height ?? 72) * imageOversample, 'Fit')
 							.toDataUrl('png')
 
 						return {
