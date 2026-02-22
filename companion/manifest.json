@@ -2,6 +2,7 @@
 	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 	"id": "generic-http",
 	"name": "generic-http",
+	"type": "connection",
 	"shortname": "http",
 	"description": "generic-http",
 	"version": "0.0.0",

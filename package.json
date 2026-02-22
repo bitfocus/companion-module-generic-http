@@ -13,7 +13,7 @@
 	"license": "MIT",
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"dependencies": {
-		"@companion-module/base": "~1.14.1",
+		"@companion-module/base": "~2.0.0-alpha.0",
 		"@julusian/image-rs": "^2.1.1",
 		"got": "^14.6.6",
 		"hpagent": "^1.2.0"

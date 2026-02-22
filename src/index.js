@@ -1,4 +1,5 @@
-import { InstanceBase, runEntrypoint, InstanceStatus } from '@companion-module/base'
+// @ts-check
+import { InstanceBase, InstanceStatus } from '@companion-module/base'
 import got from 'got'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
@@ -6,7 +7,9 @@ import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
 import { ImageTransformer } from '@julusian/image-rs'
 
-class GenericHttpInstance extends InstanceBase {
+export const UpgradeScripts = upgradeScripts
+
+export default class GenericHttpInstance extends InstanceBase {
 	configUpdated(config) {
 		this.config = config
 
@@ -31,13 +34,13 @@ class GenericHttpInstance extends InstanceBase {
 	// When module gets deleted
 	async destroy() {
 		// Stop any running feedback timers
-		for (const timer of Object.values(this.feedbackTimers)) {
-			clearInterval(timer)
+		for (const cleanupTimer of this.feedbackCleanupTimers.values()) {
+			cleanupTimer()
 		}
 	}
 
-	async prepareQuery(context, action, includeBody) {
-		let url = await context.parseVariablesInString(action.options.url || '')
+	async prepareQuery(action, includeBody) {
+		let url = action.options.url || ''
 		if (url.substring(0, 4) !== 'http') {
 			if (this.config.prefix && this.config.prefix.length > 0) {
 				url = `${this.config.prefix}${url.trim()}`
@@ -51,16 +54,8 @@ class GenericHttpInstance extends InstanceBase {
 
 			// If it's a string, parse variables and check if it's empty
 			if (typeof bodyValue === 'string') {
-				bodyValue = await context.parseVariablesInString(bodyValue || '')
 				if (bodyValue.trim() === '') {
 					bodyValue = undefined
-				}
-			} else {
-				try {
-					bodyValue = await context.parseVariablesInString(bodyValue)
-				} catch (e) {
-					// If parsing fails, use the original value
-					bodyValue = action.options.body
 				}
 			}
 
@@ -95,23 +90,16 @@ class GenericHttpInstance extends InstanceBase {
 			// Handle the header value - it could be a string, boolean, number, etc.
 			let headerValue = action.options.header
 
-			// If it's a string, parse variables and check if it's empty
-			if (typeof headerValue === 'string') {
-				headerValue = await context.parseVariablesInString(headerValue || '')
-				if (headerValue.trim() === '') {
-					headerValue = undefined
-				}
-			} else {
-				// For non-string values, parse variables if possible
-				try {
-					headerValue = await context.parseVariablesInString(headerValue)
-				} catch (e) {
-					// If parsing fails, use the original value
-					headerValue = action.options.header
-				}
+			if (typeof headerValue === 'string' && headerValue.trim() === '') {
+				// Trim an empty string
+				headerValue = undefined
 			}
 
-			if (headerValue !== undefined && headerValue !== null) {
+			if (headerValue) {
+				if (typeof headerValue === 'object') {
+					// If its already an object, it could already be valid
+					headers = headerValue
+				}
 				try {
 					headers = JSON.parse(headerValue)
 				} catch (e) {
@@ -169,7 +157,13 @@ class GenericHttpInstance extends InstanceBase {
 		}
 	}
 
-	processResponse(action, response) {
+	/**
+	 *
+	 * @param {import('@companion-module/base').CompanionActionContext} context
+	 * @param {import('@companion-module/base').CompanionActionEvent} action
+	 * @param {*} response
+	 */
+	processResponse(context, action, response) {
 		if (response.ok) {
 			this.updateStatus(InstanceStatus.Ok)
 		} else {
@@ -181,17 +175,17 @@ class GenericHttpInstance extends InstanceBase {
 		}
 
 		// store status code into retrieved dedicated custom variable
-		const statusCodeVariable = action.options.statusCodeVariable
+		const statusCodeVariable = String(action.options.statusCodeVariable)
 		if (statusCodeVariable) {
 			this.log('debug', `Status code ${response.statusCode}`)
 
 			this.log('debug', `Writing status code to ${statusCodeVariable}`)
 
-			this.setCustomVariableValue(statusCodeVariable, response.statusCode)
+			context.setCustomVariableValue(statusCodeVariable, response.statusCode)
 		}
 
 		// store JSON result data into retrieved dedicated custom variable
-		const jsonResultDataVariable = action.options.jsonResultDataVariable
+		const jsonResultDataVariable = String(action.options.jsonResultDataVariable)
 		if (jsonResultDataVariable) {
 			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
 
@@ -209,7 +203,7 @@ class GenericHttpInstance extends InstanceBase {
 				}
 			}
 
-			this.setCustomVariableValue(jsonResultDataVariable, resultData)
+			context.setCustomVariableValue(jsonResultDataVariable, resultData)
 		}
 	}
 
@@ -229,12 +223,12 @@ class GenericHttpInstance extends InstanceBase {
 					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+					const { url, options } = await this.prepareQuery(action, true)
 
 					try {
 						const response = await got.post(url, options)
 
-						this.processResponse(action, response)
+						this.processResponse(context, action, response)
 					} catch (e) {
 						this.log('error', `HTTP POST Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -251,12 +245,12 @@ class GenericHttpInstance extends InstanceBase {
 					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, false)
+					const { url, options } = await this.prepareQuery(action, false)
 
 					try {
 						const response = await got.get(url, options)
 
-						this.processResponse(action, response)
+						this.processResponse(context, action, response)
 					} catch (e) {
 						this.log('error', `HTTP GET Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -275,12 +269,12 @@ class GenericHttpInstance extends InstanceBase {
 					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+					const { url, options } = await this.prepareQuery(action, true)
 
 					try {
 						const response = await got.put(url, options)
 
-						this.processResponse(action, response)
+						this.processResponse(context, action, response)
 					} catch (e) {
 						this.log('error', `HTTP PUT Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -299,12 +293,12 @@ class GenericHttpInstance extends InstanceBase {
 					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+					const { url, options } = await this.prepareQuery(action, true)
 
 					try {
 						const response = await got.patch(url, options)
 
-						this.processResponse(action, response)
+						this.processResponse(context, action, response)
 					} catch (e) {
 						this.log('error', `HTTP PATCH Request failed (${e.message})`)
 						this.updateStatus(InstanceStatus.UnknownError, e.code)
@@ -316,7 +310,7 @@ class GenericHttpInstance extends InstanceBase {
 				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.JsonResponseVariable, FIELDS.JsonStringify],
 
 				callback: async (action, context) => {
-					const { url, options } = await this.prepareQuery(context, action, true)
+					const { url, options } = await this.prepareQuery(action, true)
 
 					try {
 						const response = await got.delete(url, options)
@@ -331,7 +325,10 @@ class GenericHttpInstance extends InstanceBase {
 		})
 	}
 
-	feedbackTimers = {}
+	/**
+	 * @type {Map<string, () => void>}
+	 */
+	feedbackCleanupTimers = new Map()
 
 	initFeedbacks() {
 		const urlLabel = this.config.prefix ? 'URI' : 'URL'
@@ -341,30 +338,29 @@ class GenericHttpInstance extends InstanceBase {
 				type: 'advanced',
 				name: 'Image from URL',
 				options: [FIELDS.Url(urlLabel), FIELDS.Header, FIELDS.PollInterval],
-				subscribe: (feedback) => {
-					// Ensure existing timer is cleared
-					if (this.feedbackTimers[feedback.id]) {
-						clearInterval(this.feedbackTimers[feedback.id])
-						delete this.feedbackTimers[feedback.id]
-					}
-
-					// Start new timer if needed
-					if (feedback.options.interval) {
-						this.feedbackTimers[feedback.id] = setInterval(() => {
-							this.checkFeedbacksById(feedback.id)
-						}, feedback.options.interval)
-					}
-				},
 				unsubscribe: (feedback) => {
 					// Ensure timer is cleared
-					if (this.feedbackTimers[feedback.id]) {
-						clearInterval(this.feedbackTimers[feedback.id])
-						delete this.feedbackTimers[feedback.id]
-					}
+					const oldTimer = this.feedbackCleanupTimers.get(feedback.id)
+					if (oldTimer) oldTimer()
 				},
 				callback: async (feedback, context) => {
+					if (!feedback.previousOptions || feedback.previousOptions.interval !== feedback.options.interval) {
+						// Interval has changed, restart the poll
+						const oldTimer = this.feedbackCleanupTimers.get(feedback.id)
+						if (oldTimer) oldTimer()
+
+						const interval = Number(feedback.options.interval)
+						if (!isNaN(interval) && interval > 0) {
+							const newTimer = setInterval(() => this.checkFeedbacksById(feedback.id), interval)
+							this.feedbackCleanupTimers.set(feedback.id, () => {
+								clearInterval(newTimer)
+								this.feedbackCleanupTimers.delete(feedback.id)
+							})
+						}
+					}
+
 					try {
-						const { url, options } = await this.prepareQuery(context, feedback, false)
+						const { url, options } = await this.prepareQuery(feedback, false)
 
 						const res = await got.get(url, options)
 
@@ -393,5 +389,3 @@ class GenericHttpInstance extends InstanceBase {
 		})
 	}
 }
-
-runEntrypoint(GenericHttpInstance, upgradeScripts)
