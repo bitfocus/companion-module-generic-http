@@ -65,7 +65,6 @@ class GenericHttpInstance extends InstanceBase {
 			}
 
 			if (bodyValue !== undefined && bodyValue !== null) {
-
 				if (action.options.contenttype === 'application/json') {
 					// For JSON content type, handle different input types
 					if (typeof bodyValue === 'string') {
@@ -73,7 +72,10 @@ class GenericHttpInstance extends InstanceBase {
 						try {
 							body = JSON.parse(bodyValue)
 						} catch (e) {
-							this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`)
+							this.log(
+								'error',
+								`HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Body (${e.message})`,
+							)
 							this.updateStatus(InstanceStatus.UnknownError, e.message)
 							return
 						}
@@ -113,7 +115,10 @@ class GenericHttpInstance extends InstanceBase {
 				try {
 					headers = JSON.parse(headerValue)
 				} catch (e) {
-					this.log('error', `HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`)
+					this.log(
+						'error',
+						`HTTP ${action.actionId.toUpperCase()} Request aborted: Malformed JSON Header (${e.message})`,
+					)
 					this.updateStatus(InstanceStatus.UnknownError, e.message)
 					return
 				}
@@ -133,7 +138,6 @@ class GenericHttpInstance extends InstanceBase {
 		}
 
 		if (includeBody) {
-
 			if (typeof body === 'string') {
 				body = body.replace(/\\n/g, '\n')
 				options.body = body
@@ -149,11 +153,11 @@ class GenericHttpInstance extends InstanceBase {
 		if (this.config.proxyAddress && this.config.proxyAddress.length > 0) {
 			options.agent = {
 				http: new HttpProxyAgent({
-					proxy: this.config.proxyAddress
+					proxy: this.config.proxyAddress,
 				}),
 				https: new HttpsProxyAgent({
-					proxy: this.config.proxyAddress
-				})
+					proxy: this.config.proxyAddress,
+				}),
 			}
 		}
 
@@ -170,7 +174,10 @@ class GenericHttpInstance extends InstanceBase {
 			this.updateStatus(InstanceStatus.Ok)
 		} else {
 			this.updateStatus(InstanceStatus.UnknownError, `${response.statusCode}: ${response.statusMessage}`)
-			this.log('error', `HTTP ${action.actionId.toUpperCase()} Request failed (Response code ${response.statusCode} (${response.statusMessage}))`)
+			this.log(
+				'error',
+				`HTTP ${action.actionId.toUpperCase()} Request failed (Response code ${response.statusCode} (${response.statusMessage}))`,
+			)
 		}
 
 		// store status code into retrieved dedicated custom variable
@@ -195,13 +202,15 @@ class GenericHttpInstance extends InstanceBase {
 					resultData = JSON.parse(resultData)
 				} catch (e) {
 					//error stringifying
-					this.log('error', `HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`)
+					this.log(
+						'error',
+						`HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`,
+					)
 				}
 			}
 
 			this.setCustomVariableValue(jsonResultDataVariable, resultData)
 		}
-
 	}
 
 	initActions() {
@@ -210,13 +219,14 @@ class GenericHttpInstance extends InstanceBase {
 		this.setActionDefinitions({
 			post: {
 				name: 'POST',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
+				options: [
+					FIELDS.Url(urlLabel),
+					FIELDS.Body,
+					FIELDS.Header,
+					FIELDS.ContentType,
+					FIELDS.JsonResponseVariable,
+					FIELDS.JsonStringify,
+					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -233,11 +243,12 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			get: {
 				name: 'GET',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Header,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
+				options: [
+					FIELDS.Url(urlLabel),
+					FIELDS.Header,
+					FIELDS.JsonResponseVariable,
+					FIELDS.JsonStringify,
+					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, false)
@@ -254,13 +265,14 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			put: {
 				name: 'PUT',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
+				options: [
+					FIELDS.Url(urlLabel),
+					FIELDS.Body,
+					FIELDS.Header,
+					FIELDS.ContentType,
+					FIELDS.JsonResponseVariable,
+					FIELDS.JsonStringify,
+					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -277,13 +289,14 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			patch: {
 				name: 'PATCH',
-				options: [FIELDS.Url(urlLabel),
-					  FIELDS.Body,
-					  FIELDS.Header,
-					  FIELDS.ContentType,
-					  FIELDS.JsonResponseVariable,
-					  FIELDS.JsonStringify,
-					  FIELDS.StatusCodeVariable,
+				options: [
+					FIELDS.Url(urlLabel),
+					FIELDS.Body,
+					FIELDS.Header,
+					FIELDS.ContentType,
+					FIELDS.JsonResponseVariable,
+					FIELDS.JsonStringify,
+					FIELDS.StatusCodeVariable,
 				],
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -300,12 +313,7 @@ class GenericHttpInstance extends InstanceBase {
 			},
 			delete: {
 				name: 'DELETE',
-				options: [FIELDS.Url(urlLabel),
-				FIELDS.Body,
-				FIELDS.Header,
-				FIELDS.JsonResponseVariable,
-				FIELDS.JsonStringify,
-				],
+				options: [FIELDS.Url(urlLabel), FIELDS.Body, FIELDS.Header, FIELDS.JsonResponseVariable, FIELDS.JsonStringify],
 
 				callback: async (action, context) => {
 					const { url, options } = await this.prepareQuery(context, action, true)
@@ -360,13 +368,16 @@ class GenericHttpInstance extends InstanceBase {
 
 						const res = await got.get(url, options)
 
-
 						// Hack: oversample the image to match companion's oversampling to ensure high quality rendering
 						const imageOversample = 4
 
 						// Scale image to a sensible size
 						const png64 = await ImageTransformer.fromEncodedImage(res.rawBody)
-							.scale((feedback.image?.width ?? 72) * imageOversample, (feedback.image?.height ?? 72) * imageOversample, 'Fit')
+							.scale(
+								(feedback.image?.width ?? 72) * imageOversample,
+								(feedback.image?.height ?? 72) * imageOversample,
+								'Fit',
+							)
 							.toDataUrl('png')
 
 						return {

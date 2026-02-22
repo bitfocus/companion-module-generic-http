@@ -79,5 +79,4 @@ export const FIELDS = {
 		id: 'statusCodeVariable',
 		default: '',
 	},
-
 }

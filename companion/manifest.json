@@ -1,4 +1,5 @@
 {
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 	"id": "generic-http",
 	"name": "generic-http",
 	"shortname": "http",
@@ -30,14 +31,12 @@
 		"type": "node22",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
-		"entrypoint": "../index.js"
+		"entrypoint": "../src/index.js",
+		"permissions": {
+			"native-addons": true
+		}
 	},
 	"manufacturer": "Generic",
-	"products": [
-		"HTTP Requests"
-	],
-	"keywords": [
-		"Protocol",
-		"Generic"
-	]
+	"products": ["HTTP Requests"],
+	"keywords": ["Protocol", "Generic"]
 }

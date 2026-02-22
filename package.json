@@ -1,7 +1,7 @@
 {
 	"name": "generic-http",
 	"version": "2.7.0",
-	"main": "index.js",
+	"main": "src/index.js",
 	"type": "module",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -11,14 +11,16 @@
 		"url": "git+https://github.com/bitfocus/companion-module-generic-http.git"
 	},
 	"license": "MIT",
+	"prettier": "@companion-module/tools/.prettierrc.json",
 	"dependencies": {
-		"@companion-module/base": "~1.11.3",
+		"@companion-module/base": "~1.14.1",
 		"@julusian/image-rs": "^2.1.1",
 		"got": "^14.6.6",
 		"hpagent": "^1.2.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.6.1"
+		"@companion-module/tools": "^2.7.1",
+		"prettier": "^3.8.1"
 	},
 	"packageManager": "yarn@4.12.0"
 }
