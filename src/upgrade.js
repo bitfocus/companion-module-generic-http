@@ -10,7 +10,7 @@ export const upgradeScripts = [
 			// set default content-type on older actions
 			if (['post', 'put', 'patch'].includes(action.actionId)) {
 				if (action.options.contenttype === undefined) {
-					action.options.contenttype = 'application/json'
+					action.options.contenttype = { isExpression: false, value: 'application/json' }
 					result.updatedActions.push(action)
 				}
 			}
