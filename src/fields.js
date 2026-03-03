@@ -1,5 +1,3 @@
-// @ts-check
-
 /** @type {Record<string, import('@companion-module/base').SomeCompanionActionInputField>} */
 export const FIELDS = {
 	Url: (label) => ({

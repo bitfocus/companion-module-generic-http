@@ -1,4 +1,3 @@
-// @ts-check
 import { InstanceBase, InstanceStatus } from '@companion-module/base'
 import got from 'got'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
