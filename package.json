@@ -1,6 +1,6 @@
 {
 	"name": "generic-http",
-	"version": "2.7.0",
+	"version": "3.0.0-0",
 	"main": "src/index.js",
 	"type": "module",
 	"scripts": {
