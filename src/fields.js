@@ -1,3 +1,4 @@
+/** @type {Record<string, import('@companion-module/base').SomeCompanionActionInputField>} */
 export const FIELDS = {
 	Url: (label) => ({
 		type: 'textinput',
@@ -13,6 +14,8 @@ export const FIELDS = {
 		id: 'body',
 		default: '{}',
 		useVariables: true,
+		multiline: true,
+		allowInvalidValues: true, // Allow objects or something
 	},
 
 	Header: {
@@ -21,6 +24,8 @@ export const FIELDS = {
 		id: 'header',
 		default: '',
 		useVariables: true,
+		multiline: true,
+		allowInvalidValues: true, // Allow objects or something
 	},
 
 	ContentType: {
