@@ -1,4 +1,6 @@
 import { InstanceBase, InstanceStatus } from '@companion-module/base'
+import http from 'node:http'
+import https from 'node:https'
 import got from 'got'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
@@ -122,6 +124,18 @@ export default class GenericHttpInstance extends InstanceBase {
 			},
 
 			headers,
+		}
+
+		// got@15 does not accept the native `insecureHTTPParser` option directly, so
+		// inject it via a custom request function (got's documented native-options escape
+		// hatch). Opt-in per connection only; see config.js for the security warning.
+		// Defaults to strict parsing when the config value is anything other than `true`.
+		if (this.config.insecureHTTPParser === true) {
+			options.request = (url, requestOptions, callback) => {
+				requestOptions.insecureHTTPParser = true
+				const request = url.protocol === 'https:' ? https.request : http.request
+				return request(url, requestOptions, callback)
+			}
 		}
 
 		if (includeBody) {

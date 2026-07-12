@@ -33,4 +33,19 @@ export const upgradeScripts = [
 
 		return result
 	},
+
+	function v3_1_0(context, props) {
+		const result = {
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+
+		if (props.config && props.config.insecureHTTPParser === undefined) {
+			props.config.insecureHTTPParser = false
+			result.updatedConfig = props.config
+		}
+
+		return result
+	},
 ]

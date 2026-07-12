@@ -55,4 +55,44 @@ export const configFields = [
 			{ id: false, label: 'Accept - Use at your own risk!' },
 		],
 	},
+	{
+		type: 'static-text',
+		id: 'insecureHTTPParserInfo',
+		width: 12,
+		value: `
+					<hr />
+					<h5>⚠️ DANGER — Insecure HTTP Parser</h5>
+					<p>
+						Companion normally uses Node.js's <strong>strict</strong> HTTP parser. Strict parsing is a
+						<strong>security feature</strong>: it exists to block HTTP request smuggling and response-splitting
+						attacks (e.g. CVE-2019-15605 / CVE-2019-15606). Enabling the insecure parser <strong>disables these
+						protections</strong> for this connection.
+					</p>
+					<p>Only enable this if <strong>all</strong> of the following are true:</p>
+					<ul>
+						<li>You control or fully trust the target device, and it is on a trusted/isolated network.</li>
+						<li>The device emits technically non-compliant HTTP (e.g. bare-LF line endings) that you
+							<strong>cannot</strong> get the vendor to fix.</li>
+						<li>You accept that responses may be parsed loosely, incorrectly, or in ways that can be abused by
+							a malicious or compromised host, and that this can lead to unexpected behaviour or instability.</li>
+					</ul>
+					<p>
+						<strong>Do NOT enable this for connections that traverse the public internet, shared networks, or any
+						proxy/intermediary you do not control.</strong> When in doubt, leave it set to <strong>Strict</strong>
+						and fix the device instead.
+					</p>
+					<p><strong>USE ENTIRELY AT YOUR OWN RISK.</strong></p>
+				`,
+	},
+	{
+		type: 'dropdown',
+		id: 'insecureHTTPParser',
+		label: 'HTTP Response Parser',
+		width: 6,
+		default: false,
+		choices: [
+			{ id: false, label: 'Strict (secure) — recommended' },
+			{ id: true, label: 'Insecure / lenient — Use at your own risk!' },
+		],
+	},
 ]
