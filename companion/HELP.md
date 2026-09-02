@@ -21,6 +21,22 @@ An optional starting URL that is prepended to the URL/URI entered in each action
 
 Optional. Routes all requests through an HTTP/HTTPS proxy. Include credentials in the URL if the proxy requires them, e.g. `http://username:password@proxy-server:8080`.
 
+### Authentication
+
+Optional credentials that are sent with every request this connection makes, including the image feedback.
+
+- **None** (default) — no credentials are added.
+- **Basic** — the username and password are sent with every request, base64 encoded but not otherwise protected. Only use this over HTTPS.
+- **Digest** — [HTTP Digest access authentication](https://en.wikipedia.org/wiki/Digest_access_authentication) as defined by RFC 2617 and RFC 7616. The password itself is never sent; the module answers the server's challenge with a hash.
+
+The password is stored in Companion's secrets store, so it is not included in configuration exports.
+
+**How Digest behaves.** The first request to a host is sent without credentials, the server answers `401` with a challenge, and the module immediately repeats the request with an `Authorization: Digest ...` header. The challenge is then cached per host, so later requests are authenticated straight away without the extra round trip. If the server expires the nonce it simply challenges again and the module recovers on the next request.
+
+Supported algorithms are `MD5`, `MD5-sess`, `SHA-256`, `SHA-256-sess`, `SHA-512-256` and `SHA-512-256-sess`, with `qop=auth`, `qop=auth-int` and the older qop-less RFC 2069 form. When a server offers several challenges the strongest supported one is used. The RFC 7616 `userhash` and `username*` extensions are handled as well.
+
+If an action or feedback sets its own `Authorization` header, that header wins and no credentials are added for that request.
+
 ### Unauthorized Certificates
 
 Controls TLS certificate validation for HTTPS requests. By default the module **rejects** invalid server certificates (expired, wrong host, untrusted root, or self-signed).
