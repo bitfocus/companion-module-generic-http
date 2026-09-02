@@ -24,6 +24,7 @@ export default class GenericHttpInstance extends InstanceBase {
 
 		// The credentials may have changed, so any cached challenge is no longer trustworthy
 		this.digestAuth.reset()
+		this.forgetLegacyConfigPassword()
 
 		this.initActions()
 		this.initFeedbacks()
@@ -33,6 +34,7 @@ export default class GenericHttpInstance extends InstanceBase {
 		this.config = config
 		this.secrets = secrets ?? {}
 
+		this.forgetLegacyConfigPassword()
 		this.updateStatus(InstanceStatus.Ok)
 
 		this.initActions()
@@ -185,12 +187,42 @@ export default class GenericHttpInstance extends InstanceBase {
 	}
 
 	/**
+	 * Password from the secrets store, or the pre-secrets value still sitting in config.
+	 * An empty secret does not count as "chosen", so untouched connections keep working.
+	 */
+	resolvePassword() {
+		const secret = this.secrets?.authPassword
+		if (typeof secret === 'string' && secret !== '') return secret
+
+		const legacy = this.config.authPassword
+		return typeof legacy === 'string' ? legacy : ''
+	}
+
+	/**
+	 * Once the user has saved a password into the secrets store, drop the old config
+	 * copy so it is no longer exported. Upgrade scripts cannot create secrets, so this
+	 * is a soft migration rather than a one-shot move.
+	 */
+	forgetLegacyConfigPassword() {
+		const secret = this.secrets?.authPassword
+		if (typeof secret !== 'string' || secret === '') return
+		if (!this.config.authPassword) return
+
+		const next = { ...this.config }
+		// Blank it rather than deleting the key. JSON IPC drops `undefined`, and a
+		// host that merges config would then keep the old password.
+		next.authPassword = ''
+		this.config = next
+		this.saveConfig(next)
+	}
+
+	/**
 	 * Add the credentials configured for this connection to a request.
 	 * @param {*} options The got options built by `prepareQuery`
 	 */
 	applyAuthentication(options) {
 		const username = this.config.authUser
-		const password = this.secrets?.authPassword ?? ''
+		const password = this.resolvePassword()
 
 		if (!username) return
 
