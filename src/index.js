@@ -6,20 +6,32 @@ import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import { configFields } from './config.js'
 import { upgradeScripts } from './upgrade.js'
 import { FIELDS } from './fields.js'
+import { DigestAuth } from './digest.js'
 import { ImageTransformer } from '@julusian/image-rs'
 
 export const UpgradeScripts = upgradeScripts
 
 export default class GenericHttpInstance extends InstanceBase {
-	configUpdated(config) {
+	/**
+	 * Digest authentication state, shared by every request this connection makes so that a
+	 * challenge only has to be fetched once per host.
+	 */
+	digestAuth = new DigestAuth()
+
+	configUpdated(config, secrets) {
 		this.config = config
+		this.secrets = secrets ?? {}
+
+		// The credentials may have changed, so any cached challenge is no longer trustworthy
+		this.digestAuth.reset()
 
 		this.initActions()
 		this.initFeedbacks()
 	}
 
-	init(config) {
+	init(config, _isFirstInit, secrets) {
 		this.config = config
+		this.secrets = secrets ?? {}
 
 		this.updateStatus(InstanceStatus.Ok)
 
@@ -162,11 +174,34 @@ export default class GenericHttpInstance extends InstanceBase {
 			}
 		}
 
+		this.applyAuthentication(options)
+
 		options.throwHttpErrors = false
 
 		return {
 			url,
 			options,
+		}
+	}
+
+	/**
+	 * Add the credentials configured for this connection to a request.
+	 * @param {*} options The got options built by `prepareQuery`
+	 */
+	applyAuthentication(options) {
+		const username = this.config.authUser
+		const password = this.secrets?.authPassword ?? ''
+
+		if (!username) return
+
+		switch (this.config.authType) {
+			case 'basic':
+				options.username = username
+				options.password = password
+				break
+			case 'digest':
+				this.digestAuth.applyToOptions(options, username, password)
+				break
 		}
 	}
 

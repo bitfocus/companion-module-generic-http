@@ -48,4 +48,19 @@ export const upgradeScripts = [
 
 		return result
 	},
+
+	function v3_2_0(context, props) {
+		const result = {
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+
+		if (props.config && props.config.authType === undefined) {
+			props.config.authType = 'none'
+			result.updatedConfig = props.config
+		}
+
+		return result
+	},
 ]
