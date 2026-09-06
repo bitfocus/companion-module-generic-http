@@ -188,8 +188,8 @@ export default class GenericHttpInstance extends InstanceBase {
 		}
 
 		// store status code into retrieved dedicated custom variable
-		const statusCodeVariable = String(action.options.statusCodeVariable)
-		if (statusCodeVariable) {
+		const statusCodeVariable = action.options.statusCodeVariable
+		if (statusCodeVariable && typeof statusCodeVariable === 'string') {
 			this.log('debug', `Status code ${response.statusCode}`)
 
 			this.log('debug', `Writing status code to ${statusCodeVariable}`)
@@ -198,8 +198,8 @@ export default class GenericHttpInstance extends InstanceBase {
 		}
 
 		// store JSON result data into retrieved dedicated custom variable
-		const jsonResultDataVariable = String(action.options.jsonResultDataVariable)
-		if (jsonResultDataVariable) {
+		const jsonResultDataVariable = action.options.jsonResultDataVariable
+		if (jsonResultDataVariable && typeof jsonResultDataVariable === 'string') {
 			this.log('debug', `Writing result body to ${jsonResultDataVariable}`)
 
 			let resultData = response.body
@@ -208,10 +208,11 @@ export default class GenericHttpInstance extends InstanceBase {
 				try {
 					resultData = JSON.parse(resultData)
 				} catch (e) {
-					//error stringifying
+					// Not JSON, so store the raw body instead. Not fatal, the action still succeeded.
 					this.log(
-						'error',
-						`HTTP ${action.actionId.toUpperCase()} Response: Failed to parse JSON result data (${e.message})`,
+						'warn',
+						`HTTP ${action.actionId.toUpperCase()} Response: body is not valid JSON (${e.message}), storing it as text. ` +
+							`Enable "JSON Stringify Result" on this action if the response is not expected to be JSON.`,
 					)
 				}
 			}
