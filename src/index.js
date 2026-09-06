@@ -212,7 +212,7 @@ export default class GenericHttpInstance extends InstanceBase {
 					this.log(
 						'warn',
 						`HTTP ${action.actionId.toUpperCase()} Response: body is not valid JSON (${e.message}), storing it as text. ` +
-							`Enable "JSON Stringify Result" on this action if the response is not expected to be JSON.`,
+							`Enable "Store result as text" on this action if the response is not expected to be JSON.`,
 					)
 				}
 			}

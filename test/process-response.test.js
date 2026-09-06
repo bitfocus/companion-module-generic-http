@@ -103,7 +103,7 @@ test('does not attempt to parse the body when no result variable is configured (
 	const instance = makeInstance()
 	const context = makeContext()
 
-	// "JSON Stringify Result" unchecked + a non-JSON body: previously this reached
+	// "Store result as text" unchecked + a non-JSON body: previously this reached
 	// JSON.parse via the truthy "undefined" variable name and logged a parse error.
 	instance.processResponse(
 		context,
