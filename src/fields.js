@@ -73,9 +73,13 @@ export const FIELDS = {
 
 	JsonStringify: {
 		type: 'checkbox',
-		label: 'JSON Stringify Result',
+		label: 'Store result as text',
 		id: 'result_stringify',
 		default: true,
+		tooltip:
+			'When enabled, the response body is stored in the variable exactly as received. ' +
+			'Disable this to parse the body as JSON first, so the variable holds an object you can index into. ' +
+			'Leave it enabled if the endpoint does not return JSON, otherwise parsing will fail and the body will be stored as text anyway.',
 	},
 
 	StatusCodeVariable: {

@@ -4,7 +4,7 @@
 	"main": "src/index.js",
 	"type": "module",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "node --test \"test/*.test.js\""
 	},
 	"repository": {
 		"type": "git",
@@ -14,13 +14,13 @@
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"dependencies": {
 		"@companion-module/base": "~2.0.4",
-		"@julusian/image-rs": "^2.1.1",
+		"@julusian/image-rs": "^2.2.0",
 		"got": "^15.1.0",
 		"hpagent": "^1.2.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^3.1.0",
-		"prettier": "^3.9.5"
+		"prettier": "^3.9.6"
 	},
 	"packageManager": "yarn@4.14.1"
 }

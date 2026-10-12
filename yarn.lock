@@ -276,10 +276,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@julusian/image-rs@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "@julusian/image-rs@npm:2.1.1"
-  checksum: 10c0/dfc898334e322eaedaab2b970f787cb5ddb8fec6743806918b5517677b36352cd73f7476e4a6738c85b045ba37493162f34c3d06b9ffdda0fdfc625bae7203df
+"@julusian/image-rs@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@julusian/image-rs@npm:2.2.0"
+  checksum: 10c0/9d622e41f7cb167868e0290e2de8b7f9e8d734e77a9e4dc2d76f3a524674791aedf2ba0d6e213ff0b0ec901574db73818b12084b75cda4286f4db65f5c9bd88d
   languageName: node
   linkType: hard
 
@@ -362,9 +362,9 @@ __metadata:
   linkType: hard
 
 "colord@npm:^2.9.3":
-  version: 2.9.3
-  resolution: "colord@npm:2.9.3"
-  checksum: 10c0/9699e956894d8996b28c686afe8988720785f476f59335c80ce852ded76ab3ebe252703aec53d9bef54f6219aea6b960fb3d9a8300058a1d0c0d4026460cd110
+  version: 2.10.0
+  resolution: "colord@npm:2.10.0"
+  checksum: 10c0/2f5d1d1759124f593deca17bbbab8a88bdc3ab68bbcc88db76c1192d9a5d575db202badde044bf61789561fa0ed7a9eb895382becad1af27ec65934c216e9e04
   languageName: node
   linkType: hard
 
@@ -586,10 +586,10 @@ __metadata:
   dependencies:
     "@companion-module/base": "npm:~2.0.4"
     "@companion-module/tools": "npm:^3.1.0"
-    "@julusian/image-rs": "npm:^2.1.1"
+    "@julusian/image-rs": "npm:^2.2.0"
     got: "npm:^15.1.0"
     hpagent: "npm:^1.2.0"
-    prettier: "npm:^3.9.5"
+    prettier: "npm:^3.9.6"
   languageName: unknown
   linkType: soft
 
@@ -780,12 +780,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.9.5":
-  version: 3.9.5
-  resolution: "prettier@npm:3.9.5"
+"prettier@npm:^3.9.6":
+  version: 3.9.6
+  resolution: "prettier@npm:3.9.6"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/0349dd9e6d8010965de6f69e6b6ee2484b8caf78c66675afced6c75ad60ff24c3a2a4f41153fb8adeaee4d8f539641b48cebc71d283cec4d146e9962126c5ceb
+  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
   languageName: node
   linkType: hard
 
