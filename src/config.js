@@ -24,6 +24,54 @@ export const configFields = [
 	},
 	{
 		type: 'static-text',
+		id: 'authInfo',
+		width: 12,
+		value: `
+					<hr />
+					<h5>Authentication</h5>
+					<p>
+						Optional credentials sent with every request made by this connection. <strong>Basic</strong> sends
+						the username and password with each request, and should only be used over HTTPS.
+						<strong>Digest</strong> (RFC 7616) never sends the password itself; the server is asked for a
+						challenge first, which costs one extra request the first time a host is contacted.
+					</p>
+					<p>
+						An <code>Authorization</code> header set manually on an action or feedback always takes precedence
+						over these settings.
+					</p>
+				`,
+	},
+	{
+		type: 'dropdown',
+		id: 'authType',
+		label: 'Authentication',
+		width: 4,
+		default: 'none',
+		disableAutoExpression: true,
+		choices: [
+			{ id: 'none', label: 'None' },
+			{ id: 'basic', label: 'Basic' },
+			{ id: 'digest', label: 'Digest' },
+		],
+	},
+	{
+		type: 'textinput',
+		id: 'authUser',
+		label: 'Username',
+		width: 4,
+		default: '',
+		isVisibleExpression: '$(options:authType) != "none"',
+	},
+	{
+		type: 'secret-text',
+		id: 'authPassword',
+		label: 'Password',
+		width: 4,
+		default: '',
+		isVisibleExpression: '$(options:authType) != "none"',
+	},
+	{
+		type: 'static-text',
 		id: 'rejectUnauthorizedInfo',
 		width: 12,
 		value: `

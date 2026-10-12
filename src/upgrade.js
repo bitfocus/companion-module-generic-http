@@ -48,4 +48,23 @@ export const upgradeScripts = [
 
 		return result
 	},
+
+	function v3_2_0(context, props) {
+		const result = {
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+
+		if (props.config && props.config.authType === undefined) {
+			props.config.authType = 'none'
+			result.updatedConfig = props.config
+		}
+
+		// Leave any pre-secrets `authPassword` in config. Upgrade scripts cannot
+		// create a secrets-store entry, so the instance falls back to that value
+		// until the user saves a password in the new secret field.
+
+		return result
+	},
 ]
